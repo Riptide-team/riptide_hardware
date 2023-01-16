@@ -1,0 +1,17 @@
+<library path="riptide_hardware">
+    <class name="riptide_hardware/SpartonAHRSM1Hardware" type="riptide_hardware::SpartonAHRSM1Hardware" base_class_type="hardware_interface::SensorInterface">
+        <description>
+            Sparton AHRS M1 Hardware Interface
+        </description>
+    </class>
+    <class name="riptide_hardware/BatteryCardHardware" type="riptide_hardware::BatteryCardHardware" base_class_type="hardware_interface::SensorInterface">
+        <description>
+            Riptide's battery card hardware interface
+        </description>
+    </class>
+    <class name="riptide_hardware/ActuatorsHardware" type="riptide_hardware::ActuatorsHardware" base_class_type="hardware_interface::SystemInterface">
+        <description>
+            Riptide's actuators control through pololu maestro
+        </description>
+    </class>
+</library>

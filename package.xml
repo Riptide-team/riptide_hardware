@@ -11,8 +11,6 @@
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
-  <depend>riptide_simulator</depend>
-  <depend>protobuf</depend>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

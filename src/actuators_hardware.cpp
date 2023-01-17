@@ -1,6 +1,7 @@
 #include "riptide_hardware/actuators_hardware.hpp"
 
 #include <string>
+#include <algorithm>
 
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
@@ -95,13 +96,15 @@ namespace riptide_hardware {
     }
 
     hardware_interface::return_type ActuatorsHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
-        for (std::size_t channel=0; channel<4; ++channel) {
-            uint16_t position;
+        uint16_t position;
+        driver_->GetPosition(0, position);
+        hw_states_positions_[0] = (position - 1500) / 500;
+        for (std::size_t channel=1; channel<4; ++channel) {
             driver_->GetPosition(channel, position);
-            hw_states_positions_[channel] = 1.0 * position;
+            hw_states_positions_[channel] = M_PI * (position - 1500) / 1000;
         };
 
-        RCLCPP_INFO(
+        RCLCPP_DEBUG(
             rclcpp::get_logger("ActuatorsHardware"),
             "Reading positions: %f, %f, %f, %f",
             hw_states_positions_[0], hw_states_positions_[1],
@@ -113,11 +116,12 @@ namespace riptide_hardware {
 
     hardware_interface::return_type ActuatorsHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
         uint16_t positions[4];
-        std::transform(
-            hw_commands_positions_.begin(), hw_commands_positions_.end(),
-            positions, [](const int32_t & elem){ return elem; }
-        );
 
+        positions[0] = uint16_t(500 * std::clamp(hw_commands_positions_[0], -1., 1.) + 1500);
+        for (std::size_t i=1; i<4; ++i) {
+            positions[i] = uint16_t(1000 * std::clamp(double(hw_commands_positions_[i]), -M_PI_2, M_PI_2) / M_PI + 1500);
+        }
+        
         driver_->SetMultiplePositions(4, 0, positions);
 
         return hardware_interface::return_type::OK;

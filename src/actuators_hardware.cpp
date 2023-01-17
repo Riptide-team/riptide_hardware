@@ -112,7 +112,7 @@ namespace riptide_hardware {
     }
 
     hardware_interface::return_type ActuatorsHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
-        int32_t positions[4];
+        uint16_t positions[4];
         std::transform(
             hw_commands_positions_.begin(), hw_commands_positions_.end(),
             positions, [](const int32_t & elem){ return elem; }

@@ -74,8 +74,6 @@ namespace riptide_hardware {
             info_.joints[i].name, info_.joints[i].state_interfaces[0].name, &hw_commands_positions_[i]));
         }
 
-        RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Command interface : %s", (info_.joints[0].name + "/" + info_.joints[0].state_interfaces[0].name).c_str());
-
         return command_interfaces;
     }
 

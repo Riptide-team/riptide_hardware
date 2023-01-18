@@ -9,8 +9,6 @@
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 
-#include "pololu_maestro_driver/pololu_maestro_driver.hpp"
-
 #include <rtac_asio/Stream.h>
 #include <rtac_asio/SerialStream.h>
 
@@ -49,8 +47,6 @@ namespace riptide_hardware {
             unsigned int baud_rate_;
 
             // Driver
-            std::unique_ptr<PololuMaestroDriver> driver_ = nullptr;
-
             rtac::asio::Stream::Ptr serial_ = nullptr;
 
             uint8_t response_[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };

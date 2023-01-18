@@ -10,8 +10,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/macros.hpp"
 
-#include "pololu_maestro_driver/pololu_maestro_driver.hpp"
-
 
 namespace riptide_hardware {
 
@@ -20,22 +18,19 @@ namespace riptide_hardware {
     }
 
     void ActuatorsHardware::read_callback(const boost::system::error_code /*err*/, std::size_t /*n*/) {
+        // unlocking the mutex
+        m_states_.unlock();
+
+        // Logging
         RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Read request to Pololu ended\n Got %f %f %f %f",
         hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
-
-        // Putting values in the states
-        {
-            std::lock_guard<std::mutex> lock(m_states_);
-            for (std::size_t i=0; i<4; ++i) {
-                hw_states_positions_[i] = response_[2*i] + 256 * response_[2*i+1]; 
-            }
-        }
 
         // Requesting values on the serial
         uint8_t command[8] = { 0x90, 0x00, 0x90, 0x01, 0x90, 0x02, 0x90, 0x03 };
         serial_->async_write(sizeof(command), command, std::bind(&ActuatorsHardware::write_callback, this, std::placeholders::_1, std::placeholders::_2));
         
         // Reading until everything is received
+        m_states_.lock();
         serial_->async_read(sizeof(response_), response_, std::bind(&ActuatorsHardware::read_callback, this, std::placeholders::_1, std::placeholders::_2));
     }
 
@@ -141,14 +136,13 @@ namespace riptide_hardware {
     }
 
     hardware_interface::return_type ActuatorsHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
-        uint16_t position;
-
-        std::lock_guard<std::mutex> lock_(m_states_);
-        hw_states_positions_[0] = (position - 1500) / 500;
-        for (std::size_t channel=1; channel<4; ++channel) {
-            driver_->GetPosition(channel, position);
-            hw_states_positions_[channel] = M_PI * (position - 1500) / 1000;
-        };
+        // Putting values in the states
+        {
+            std::lock_guard<std::mutex> lock(m_states_);
+            for (std::size_t i=0; i<4; ++i) {
+                hw_states_positions_[i] = response_[2*i] + 256 * response_[2*i+1]; 
+            }
+        }
 
         RCLCPP_DEBUG(
             rclcpp::get_logger("ActuatorsHardware"),

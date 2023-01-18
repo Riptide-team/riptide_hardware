@@ -100,9 +100,11 @@ namespace riptide_hardware {
 
         uint16_t position;
         driver_->GetPosition(0, position);
+        RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Get position 0");
         hw_states_positions_[0] = (position - 1500) / 500;
         for (std::size_t channel=1; channel<4; ++channel) {
             driver_->GetPosition(channel, position);
+            RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Get position %d", channel);
             hw_states_positions_[channel] = M_PI * (position - 1500) / 1000;
         };
 

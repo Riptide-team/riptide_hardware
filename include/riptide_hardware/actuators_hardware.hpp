@@ -2,6 +2,7 @@
 #define ACTUATORS_HARDWARE_HPP
 
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include "hardware_interface/system_interface.hpp"
@@ -9,6 +10,9 @@
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 
 #include "pololu_maestro_driver/pololu_maestro_driver.hpp"
+
+#include <rtac_asio/Stream.h>
+#include <rtac_asio/SerialStream.h>
 
 
 namespace riptide_hardware {
@@ -46,6 +50,15 @@ namespace riptide_hardware {
 
             // Driver
             std::unique_ptr<PololuMaestroDriver> driver_ = nullptr;
+
+            rtac::asio::Stream::Ptr serial_ = nullptr;
+
+            uint8_t response_[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+            void read_callback(const boost::system::error_code err, std::size_t n);
+
+            void write_callback(const boost::system::error_code err, std::size_t n);
+
+            std::mutex m_states_;
     };
 } // riptide_hardware
 

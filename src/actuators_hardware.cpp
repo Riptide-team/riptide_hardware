@@ -1,7 +1,8 @@
 #include "riptide_hardware/actuators_hardware.hpp"
 
-#include <string>
 #include <algorithm>
+#include <mutex>
+#include <string>
 
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
@@ -13,6 +14,29 @@
 
 
 namespace riptide_hardware {
+
+    void ActuatorsHardware::write_callback(const boost::system::error_code /*err*/, std::size_t /*n*/) {
+        RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Write request to Pololu ended");
+    }
+
+    void ActuatorsHardware::read_callback(const boost::system::error_code /*err*/, std::size_t /*n*/) {
+        RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Read request to Pololu ended");
+
+        // Putting values in the states
+        {
+            std::lock_guard<std::mutex> lock(m_states_);
+            for (std::size_t i=0; i<4; ++i) {
+                hw_states_positions_[i] = response_[2*i] + 256 * response_[2*i+1]; 
+            }
+        }
+
+        // Requesting values on the serial
+        uint8_t command[8] = { 0x90, 0x00, 0x90, 0x01, 0x90, 0x02, 0x90, 0x03 };
+        serial_->async_write(sizeof(command), command, std::bind(&ActuatorsHardware::write_callback, this, std::placeholders::_1, std::placeholders::_2));
+        
+        // Reading until everything is received
+        serial_->async_read(sizeof(response_), response_, std::bind(&ActuatorsHardware::read_callback, this, std::placeholders::_1, std::placeholders::_2));
+    }
 
     CallbackReturn ActuatorsHardware::on_init(const hardware_interface::HardwareInfo & info_) {
         if (hardware_interface::SystemInterface::on_init(info_) != hardware_interface::CallbackReturn::SUCCESS) {
@@ -88,7 +112,7 @@ namespace riptide_hardware {
 
         // Trying to instanciate the driver
         try {
-            driver_ = std::make_unique<PololuMaestroDriver>(port_, baud_rate_);
+            serial_ = rtac::asio::Stream::CreateSerial(port_, baud_rate_);
             RCLCPP_INFO(
                 rclcpp::get_logger("ActuatorsHardware"),
                 "Driver sucessfully created!"
@@ -114,7 +138,8 @@ namespace riptide_hardware {
 
     hardware_interface::return_type ActuatorsHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
         uint16_t position;
-        driver_->GetPosition(std::size_t(0), position);
+
+        std::lock_guard<std::mutex> lock_(m_states_);
         hw_states_positions_[0] = (position - 1500) / 500;
         for (std::size_t channel=1; channel<4; ++channel) {
             driver_->GetPosition(channel, position);
@@ -133,12 +158,21 @@ namespace riptide_hardware {
 
     hardware_interface::return_type ActuatorsHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
         uint16_t positions[4];
-        positions[0] = uint16_t(500 * std::clamp(hw_commands_positions_[0], -1., 1.) + 1500);
+        positions[0] = uint16_t(2000 * std::clamp(hw_commands_positions_[0], -1., 1.) + 6000);
         for (std::size_t i=1; i<4; ++i) {
-            positions[i] = uint16_t(1000 * std::clamp(double(hw_commands_positions_[i]), -M_PI_2, M_PI_2) / M_PI + 1500);
+            positions[i] = uint16_t(4000 * std::clamp(double(hw_commands_positions_[i]), -M_PI_2, M_PI_2) / M_PI + 6000);
         }
-        
-        driver_->SetMultiplePositions(4, 0, positions);
+
+        std::size_t n = 4;
+        auto command = std::make_unique<uint8_t[]>(2*n+3);
+        command[0] = 0x9F;
+        command[1] = n;
+        command[2] = 0x00;
+        for (uint8_t i=0; i<n; ++i) {
+            command[3+2*i] = static_cast<uint8_t>(positions[i] & 0x7F);
+            command[4+2*i] = static_cast<uint8_t>((positions[i] >> 7) & 0x7F);
+        }
+        serial_->async_write(sizeof(command), command.get(), std::bind(&ActuatorsHardware::write_callback, this, std::placeholders::_1, std::placeholders::_2));
 
         return hardware_interface::return_type::OK;
     }

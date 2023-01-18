@@ -122,8 +122,8 @@ namespace riptide_hardware {
             return hardware_interface::CallbackReturn::ERROR;
         }
 
-        read_thread_ = std::thread([this]{read_callback(boost::system::error_code(), 0);});
-        read_thread_.detach();
+        // read_thread_ = std::thread([this]{read_callback(boost::system::error_code(), 0);});
+        // read_thread_.detach();
 
         RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Successfully activated!");
         return hardware_interface::CallbackReturn::SUCCESS;
@@ -137,11 +137,15 @@ namespace riptide_hardware {
 
     hardware_interface::return_type ActuatorsHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
         // Putting values in the states
-        {
-            std::lock_guard<std::mutex> lock(m_states_);
-            for (std::size_t i=0; i<4; ++i) {
-                hw_states_positions_[i] = response_[2*i] + 256 * response_[2*i+1]; 
-            }
+        // {
+        //     std::lock_guard<std::mutex> lock(m_states_);
+        //     for (std::size_t i=0; i<4; ++i) {
+        //         hw_states_positions_[i] = response_[2*i] + 256 * response_[2*i+1]; 
+        //     }
+        // }
+
+        for (std::size_t i=0; i<4; ++i) {
+            hw_states_positions_[i] = hw_commands_positions_[i]; 
         }
 
         RCLCPP_DEBUG(

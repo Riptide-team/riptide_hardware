@@ -127,7 +127,8 @@ namespace riptide_hardware {
             return hardware_interface::CallbackReturn::ERROR;
         }
 
-        read_callback(boost::system::error_code(), 0);
+        read_thread_ = std::thread([this]{read_callback(boost::system::error_code(), 0);});
+        read_thread_.detach();
 
         RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Successfully activated!");
         return hardware_interface::CallbackReturn::SUCCESS;

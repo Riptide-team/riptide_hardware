@@ -20,7 +20,8 @@ namespace riptide_hardware {
     }
 
     void ActuatorsHardware::read_callback(const boost::system::error_code /*err*/, std::size_t /*n*/) {
-        RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Read request to Pololu ended");
+        RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Read request to Pololu ended\n Got %f %f %f %f",
+        hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
 
         // Putting values in the states
         {

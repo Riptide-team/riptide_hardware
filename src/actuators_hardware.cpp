@@ -85,6 +85,23 @@ namespace riptide_hardware {
         for (unsigned int i=0; i<hw_commands_positions_.size(); ++i) {
             hw_commands_positions_[i] = 0;
         }
+
+        // Trying to instanciate the driver
+        try {
+            driver_ = std::make_unique<PololuMaestroDriver>(port_, baud_rate_);
+            RCLCPP_INFO(
+                rclcpp::get_logger("ActuatorsHardware"),
+                "Driver sucessfully created!"
+            );
+        }
+        catch(boost::system::system_error& e) {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("ActuatorsHardware"),
+                "Serial error: '%s'", e.what()
+            );
+            return hardware_interface::CallbackReturn::ERROR;
+        }
+
         RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Successfully activated!");
         return hardware_interface::CallbackReturn::SUCCESS;
     }

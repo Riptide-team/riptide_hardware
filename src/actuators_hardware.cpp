@@ -121,7 +121,7 @@ namespace riptide_hardware {
             hw_states_positions_[channel] = M_PI * (position - 1500) / 1000;
         };
 
-        RCLCPP_INFO(
+        RCLCPP_DEBUG(
             rclcpp::get_logger("ActuatorsHardware"),
             "Reading positions: %f, %f, %f, %f",
             hw_states_positions_[0], hw_states_positions_[1],

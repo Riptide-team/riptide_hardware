@@ -52,15 +52,6 @@ namespace riptide_hardware {
             rtac::asio::Stream::Ptr serial_ = nullptr;
 
             std::unique_ptr<PololuMaestroDriver> driver_ = nullptr;
-
-            uint8_t response_[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-            void read_callback(const boost::system::error_code err, std::size_t n);
-
-            std::thread read_thread_;
-
-            void write_callback(const boost::system::error_code err, std::size_t n);
-
-            std::mutex m_states_;
     };
 } // riptide_hardware
 

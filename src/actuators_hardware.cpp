@@ -15,27 +15,6 @@
 
 namespace riptide_hardware {
 
-    void ActuatorsHardware::write_callback(const boost::system::error_code /*err*/, std::size_t /*n*/) {
-        RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Write request to Pololu ended");
-    }
-
-    void ActuatorsHardware::read_callback(const boost::system::error_code /*err*/, std::size_t /*n*/) {
-        // unlocking the mutex
-        m_states_.unlock();
-
-        // Logging
-        RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Read request to Pololu ended\n Got %f %f %f %f",
-        hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
-
-        // Requesting values on the serial
-        uint8_t command[8] = { 0x90, 0x00, 0x90, 0x01, 0x90, 0x02, 0x90, 0x03 };
-        serial_->async_write(sizeof(command), command, std::bind(&ActuatorsHardware::write_callback, this, std::placeholders::_1, std::placeholders::_2));
-        
-        // Reading until everything is received
-        m_states_.lock();
-        serial_->async_read(sizeof(response_), response_, std::bind(&ActuatorsHardware::read_callback, this, std::placeholders::_1, std::placeholders::_2));
-    }
-
     CallbackReturn ActuatorsHardware::on_init(const hardware_interface::HardwareInfo & info_) {
         if (hardware_interface::SystemInterface::on_init(info_) != hardware_interface::CallbackReturn::SUCCESS) {
             return hardware_interface::CallbackReturn::ERROR;
@@ -110,7 +89,6 @@ namespace riptide_hardware {
 
         // Trying to instanciate the driver
         try {
-            // serial_ = rtac::asio::Stream::CreateSerial(port_, baud_rate_);
             driver_ = std::make_unique<PololuMaestroDriver>(port_, baud_rate_);
             RCLCPP_INFO(
                 rclcpp::get_logger("ActuatorsHardware"),
@@ -125,9 +103,6 @@ namespace riptide_hardware {
             return hardware_interface::CallbackReturn::ERROR;
         }
 
-        // read_thread_ = std::thread([this]{read_callback(boost::system::error_code(), 0);});
-        // read_thread_.detach();
-
         RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Successfully activated!");
         return hardware_interface::CallbackReturn::SUCCESS;
     }
@@ -139,17 +114,14 @@ namespace riptide_hardware {
     }
 
     hardware_interface::return_type ActuatorsHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
-        // Putting values in the states
-        // {
-        //     std::lock_guard<std::mutex> lock(m_states_);
-        //     for (std::size_t i=0; i<4; ++i) {
-        //         hw_states_positions_[i] = response_[2*i] + 256 * response_[2*i+1]; 
-        //     }
-        // }
+        uint16_t position;
+        driver_->GetPosition(0, position);
+        hw_states_positions_[0] = (std::clamp(double(position), 1000., 2000.) - 1500) / 500;
 
-        //for (std::size_t i=0; i<4; ++i) {
-        //    hw_states_positions_[i] = hw_commands_positions_[i]; 
-        //}
+        for (std::size_t channel=0; channel<4; ++channel) {
+            driver_->GetPosition(channel, position);
+            hw_states_positions_[channel] = M_PI * (std::clamp(double(position), 1000., 2000.) - 1500) / 1000; 
+        }
 
         RCLCPP_DEBUG(
             rclcpp::get_logger("ActuatorsHardware"),
@@ -169,8 +141,7 @@ namespace riptide_hardware {
             positions[i] = uint16_t(1000 * std::clamp(double(hw_commands_positions_[i]), -M_PI_2, M_PI_2) / M_PI + 1500);
         }
 
-        // RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Control %f %f %f %f", hw_commands_positions_[0], hw_commands_positions_[1], hw_commands_positions_[2], hw_commands_positions_[3]);
-	    RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Writing %d %d %d %d", positions[0], positions[1], positions[2], positions[3]);
+	    RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Writing %d %d %d %d", positions[0], positions[1], positions[2], positions[3]);
 
         driver_->SetMultiplePositions(n, 0, positions);
 

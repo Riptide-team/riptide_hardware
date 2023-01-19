@@ -144,9 +144,9 @@ namespace riptide_hardware {
         //     }
         // }
 
-        for (std::size_t i=0; i<4; ++i) {
-            hw_states_positions_[i] = hw_commands_positions_[i]; 
-        }
+        //for (std::size_t i=0; i<4; ++i) {
+        //    hw_states_positions_[i] = hw_commands_positions_[i]; 
+        //}
 
         RCLCPP_DEBUG(
             rclcpp::get_logger("ActuatorsHardware"),
@@ -174,7 +174,9 @@ namespace riptide_hardware {
             command[3+2*i] = static_cast<uint8_t>(positions[i] & 0x7F);
             command[4+2*i] = static_cast<uint8_t>((positions[i] >> 7) & 0x7F);
         }
-        serial_->write(sizeof(command), command.get());//, std::bind(&ActuatorsHardware::write_callback, this, std::placeholders::_1, std::placeholders::_2));
+        //serial_->write(sizeof(command), command.get());//, std::bind(&ActuatorsHardware::write_callback, this, std::placeholders::_1, std::placeholders::_2));
+	
+	RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Writing %f %f %f %f", positions[0], positions[1], positions[2], positions[3]);
 
         return hardware_interface::return_type::OK;
     }

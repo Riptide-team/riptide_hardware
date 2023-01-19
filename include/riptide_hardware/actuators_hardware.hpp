@@ -12,6 +12,8 @@
 #include <rtac_asio/Stream.h>
 #include <rtac_asio/SerialStream.h>
 
+#include <pololu_maestro_driver/pololu_maestro_driver.hpp>
+
 
 namespace riptide_hardware {
 
@@ -48,6 +50,8 @@ namespace riptide_hardware {
 
             // Driver
             rtac::asio::Stream::Ptr serial_ = nullptr;
+
+            std::unique_ptr<PololuMaestroDriver> driver_ = nullptr;
 
             uint8_t response_[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
             void read_callback(const boost::system::error_code err, std::size_t n);

@@ -10,6 +10,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/macros.hpp"
 
+#include <pololu_maestro_driver/pololu_maestro_driver.hpp>
+
 
 namespace riptide_hardware {
 
@@ -108,7 +110,8 @@ namespace riptide_hardware {
 
         // Trying to instanciate the driver
         try {
-            serial_ = rtac::asio::Stream::CreateSerial(port_, baud_rate_);
+            // serial_ = rtac::asio::Stream::CreateSerial(port_, baud_rate_);
+            driver_ = std::make_unique<PololuMaestroDriver>(port_, baud_rate_);
             RCLCPP_INFO(
                 rclcpp::get_logger("ActuatorsHardware"),
                 "Driver sucessfully created!"
@@ -159,25 +162,17 @@ namespace riptide_hardware {
     }
 
     hardware_interface::return_type ActuatorsHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
-        uint16_t positions[4];
+        constexpr std::size_t n = 4;
+        uint16_t positions[n];
         positions[0] = uint16_t(2000 * std::clamp(hw_commands_positions_[0], -1., 1.) + 6000);
         for (std::size_t i=1; i<4; ++i) {
             positions[i] = uint16_t(4000 * std::clamp(double(hw_commands_positions_[i]), -M_PI_2, M_PI_2) / M_PI + 6000);
         }
 
-        std::size_t n = 4;
-        auto command = std::make_unique<uint8_t[]>(2*n+3);
-        command[0] = 0x9F;
-        command[1] = n;
-        command[2] = 0x00;
-        for (uint8_t i=0; i<n; ++i) {
-            command[3+2*i] = static_cast<uint8_t>(positions[i] & 0x7F);
-            command[4+2*i] = static_cast<uint8_t>((positions[i] >> 7) & 0x7F);
-        }
-        serial_->write(sizeof(command), command.get());//, std::bind(&ActuatorsHardware::write_callback, this, std::placeholders::_1, std::placeholders::_2));
-	
-	    RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Control %f %f %f %f", hw_commands_positions_[0], hw_commands_positions_[1], hw_commands_positions_[2], hw_commands_positions_[3]);
+        RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Control %f %f %f %f", hw_commands_positions_[0], hw_commands_positions_[1], hw_commands_positions_[2], hw_commands_positions_[3]);
 	    RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Writing %d %d %d %d", positions[0], positions[1], positions[2], positions[3]);
+
+        driver_->SetMultiplePositions(n, 0, positions);
 
         return hardware_interface::return_type::OK;
     }

@@ -164,12 +164,12 @@ namespace riptide_hardware {
     hardware_interface::return_type ActuatorsHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
         constexpr std::size_t n = 4;
         uint16_t positions[n];
-        positions[0] = uint16_t(2000 * std::clamp(hw_commands_positions_[0], -1., 1.) + 6000);
+        positions[0] = uint16_t(500 * std::clamp(hw_commands_positions_[0], -1., 1.) + 1500);
         for (std::size_t i=1; i<4; ++i) {
-            positions[i] = uint16_t(4000 * std::clamp(double(hw_commands_positions_[i]), -M_PI_2, M_PI_2) / M_PI + 6000);
+            positions[i] = uint16_t(1000 * std::clamp(double(hw_commands_positions_[i]), -M_PI_2, M_PI_2) / M_PI + 1500);
         }
 
-        RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Control %f %f %f %f", hw_commands_positions_[0], hw_commands_positions_[1], hw_commands_positions_[2], hw_commands_positions_[3]);
+        // RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Control %f %f %f %f", hw_commands_positions_[0], hw_commands_positions_[1], hw_commands_positions_[2], hw_commands_positions_[3]);
 	    RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Writing %d %d %d %d", positions[0], positions[1], positions[2], positions[3]);
 
         driver_->SetMultiplePositions(n, 0, positions);

@@ -174,7 +174,7 @@ namespace riptide_hardware {
             command[3+2*i] = static_cast<uint8_t>(positions[i] & 0x7F);
             command[4+2*i] = static_cast<uint8_t>((positions[i] >> 7) & 0x7F);
         }
-        //serial_->write(sizeof(command), command.get());//, std::bind(&ActuatorsHardware::write_callback, this, std::placeholders::_1, std::placeholders::_2));
+        serial_->write(sizeof(command), command.get());//, std::bind(&ActuatorsHardware::write_callback, this, std::placeholders::_1, std::placeholders::_2));
 	
 	    RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Control %f %f %f %f", hw_commands_positions_[0], hw_commands_positions_[1], hw_commands_positions_[2], hw_commands_positions_[3]);
 	    RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Writing %d %d %d %d", positions[0], positions[1], positions[2], positions[3]);

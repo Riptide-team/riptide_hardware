@@ -86,7 +86,7 @@ namespace riptide_hardware {
         tension_ = std::numeric_limits<double>::quiet_NaN();
         current_ = std::numeric_limits<double>::quiet_NaN();
 
-        received_data_ = json::parse("\"volt\": 16.,\"current\": 0.}");
+        received_data_ = json::parse("{\"volt\": 16.,\"current\": 0.}");
         
         RCLCPP_INFO(rclcpp::get_logger("BatteryCardHardware"), "Successfully initialized !");
         return hardware_interface::CallbackReturn::SUCCESS;

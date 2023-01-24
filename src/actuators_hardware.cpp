@@ -103,12 +103,25 @@ namespace riptide_hardware {
             return hardware_interface::CallbackReturn::ERROR;
         }
 
+        // Sending neutral command
+        constexpr std::size_t n = 4;
+        uint16_t positions[n] = { 1500, 1500, 1500, 1500 };
+	    RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Writing %d %d %d %d", positions[0], positions[1], positions[2], positions[3]);
+        driver_->SetMultiplePositions(n, 0, positions);
+
         RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Successfully activated!");
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 
     CallbackReturn ActuatorsHardware::on_deactivate(const rclcpp_lifecycle::State & /*previous_state*/) {
         RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Deactivating ...please wait...");
+
+        // Sending neutral command
+        constexpr std::size_t n = 4;
+        uint16_t positions[n] = { 1500, 1500, 1500, 1500 };
+	    RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Writing %d %d %d %d", positions[0], positions[1], positions[2], positions[3]);
+        driver_->SetMultiplePositions(n, 0, positions);
+        
         RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Successfully deactivated!");
         return hardware_interface::CallbackReturn::SUCCESS;
     }

@@ -22,6 +22,9 @@ FetchContent_MakeAvailable(sparton_driver)
 FetchContent_Declare(pololu_driver GIT_REPOSITORY https://github.com/Teusner/Pololu_Maestro_Driver.git GIT_TAG main)
 FetchContent_MakeAvailable(pololu_driver)
 
+FetchContent_Declare(sea_scan_echo_driver GIT_REPOSITORY https://github.com/Teusner/Sea_Scan_Echo_Marine_Sonic_Driver.git GIT_TAG main)
+FetchContent_MakeAvailable(sea_scan_echo_driver)
+
 FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz)
 FetchContent_MakeAvailable(json)
 
@@ -30,8 +33,8 @@ FetchContent_MakeAvailable(rtac_asio)
 
 # Compile riptide_hardware
 add_library(${PROJECT_NAME} SHARED src/actuators_hardware.cpp src/sparton_ahrs_m1_hardware.cpp src/battery_card_hardware.cpp)
-target_include_directories(${PROJECT_NAME} PRIVATE include ${riptide_simulator_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} sparton_ahrs_m1_driver pololu_maestro_driver nlohmann_json::nlohmann_json rtac_asio)
+target_include_directories(${PROJECT_NAME} PRIVATE include)
+target_link_libraries(${PROJECT_NAME} sparton_ahrs_m1_driver pololu_maestro_driver sea_scan_echo_driver nlohmann_json::nlohmann_json rtac_asio)
 ament_target_dependencies(
   ${PROJECT_NAME}
   hardware_interface
@@ -78,6 +81,7 @@ ament_export_dependencies(
   rclcpp_lifecycle
   sparton_m1_driver
   pololu_driver
+  sea_scan_echo_driver
   json
   rtac_asio
 )

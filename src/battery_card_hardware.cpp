@@ -103,7 +103,7 @@ namespace riptide_hardware {
             hardware_interface::StateInterface(
                 info_.sensors[0].name,
                 info_.sensors[0].state_interfaces[1].name,
-                &tension_
+                &current_
             )
         );
 

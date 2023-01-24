@@ -34,6 +34,8 @@ namespace riptide_hardware {
 
             CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
 
+            CallbackReturn on_cleanup(const rclcpp_lifecycle::State & previous_state) override;
+
             hardware_interface::return_type read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override;
 
             hardware_interface::return_type write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override;

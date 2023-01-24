@@ -20,7 +20,6 @@ namespace riptide_hardware {
 
         RCLCPP_INFO(rclcpp::get_logger("BatteryCardHardware"), "Received: %s", (*data).substr(0, count).c_str());
 
-        buffer_ = std::string(1024, '\0');
         if(!serial_->async_read_until(buffer_.size(), (uint8_t*)buffer_.c_str(), '}',
             std::bind(&BatteryCardHardware::serial_callback, this, serial_, &buffer_, std::placeholders::_1, std::placeholders::_2))
         ) {

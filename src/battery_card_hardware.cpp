@@ -15,11 +15,17 @@ using json = nlohmann::json;
 
 namespace riptide_hardware {
     void BatteryCardHardware::serial_callback(rtac::asio::Stream::Ptr /*stream*/, std::string* data, const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t count) {
-        std::scoped_lock<std::mutex> lock_(json_mutex_);
-        received_data_ = json::parse((*data).substr(0, count));
+        std::scoped_lock<std::mutex> lock_(data_mutex_);
+
+        // Parsing data
+        json json_data = json::parse((*data).substr(0, count));
+        last_tension_ = json_data["volt"];
+        last_current_ = json_data["current"];
+        data_available_ = true;
 
         RCLCPP_INFO(rclcpp::get_logger("BatteryCardHardware"), "Received: %s", (*data).substr(0, count).c_str());
 
+        buffer_ = std::string(1024, '\0');
         if(!serial_->async_read_until(buffer_.size(), (uint8_t*)buffer_.c_str(), '}',
             std::bind(&BatteryCardHardware::serial_callback, this, serial_, &buffer_, std::placeholders::_1, std::placeholders::_2))
         ) {
@@ -85,8 +91,6 @@ namespace riptide_hardware {
         tension_ = std::numeric_limits<double>::quiet_NaN();
         current_ = std::numeric_limits<double>::quiet_NaN();
 
-        received_data_ = json::parse("{\"volt\": 16.0,\"current\": 0.0}");
-        
         RCLCPP_INFO(rclcpp::get_logger("BatteryCardHardware"), "Successfully initialized !");
         return hardware_interface::CallbackReturn::SUCCESS;
     }
@@ -164,9 +168,12 @@ namespace riptide_hardware {
     }
 
     hardware_interface::return_type BatteryCardHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
-        tension_ = received_data_["volt"];
-        current_ = received_data_["current"];
-
+        std::scoped_lock<std::mutex> lock_(data_mutex_);
+        if (data_available_) {
+            tension_ = last_tension_;
+            current_ = last_current_;
+            data_available_ = false;
+        }
         return hardware_interface::return_type::OK;
     }
 } // riptide_hardware

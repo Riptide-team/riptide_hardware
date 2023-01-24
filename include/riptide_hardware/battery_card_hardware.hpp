@@ -54,11 +54,17 @@ namespace riptide_hardware {
             // Buffer
             std::string buffer_;
 
-            // JSON received data
-            json received_data_;
+            // Data mutex
+            std::mutex data_mutex_;
 
-            // JSON mutex
-            std::mutex json_mutex_;
+            // Last tension
+            double last_tension_;
+
+            // Last current
+            double last_current_;
+
+            // Data available
+            bool data_available_ = false;
 
             void serial_callback(rtac::asio::Stream::Ptr stream, std::string* data, const rtac::asio::SerialStream::ErrorCode& err, std::size_t count);
     };

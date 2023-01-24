@@ -18,7 +18,7 @@ namespace riptide_hardware {
         std::scoped_lock<std::mutex> lock_(json_mutex_);
         received_data_ = json::parse((*data).substr(0, count));
 
-
+        RCLCPP_INFO(rclcpp::get_logger("BatteryCardHardware"), "Received: %s", (*data).substr(0, count).c_str());
 
         buffer_ = std::string(1024, '\0');
         if(!serial_->async_read_until(buffer_.size(), (uint8_t*)buffer_.c_str(), '}',

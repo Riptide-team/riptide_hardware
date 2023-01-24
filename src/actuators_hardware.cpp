@@ -114,28 +114,28 @@ namespace riptide_hardware {
     }
 
     CallbackReturn ActuatorsHardware::on_deactivate(const rclcpp_lifecycle::State & /*previous_state*/) {
-        RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Deactivating ...please wait...");
+        RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Deactivating ...please wait...");
 
         // Sending neutral command
         constexpr std::size_t n = 4;
         uint16_t positions[n] = { 1500, 1500, 1500, 1500 };
-	    RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Writing %d %d %d %d", positions[0], positions[1], positions[2], positions[3]);
+	    RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Writing %d %d %d %d", positions[0], positions[1], positions[2], positions[3]);
         driver_->SetMultiplePositions(n, 0, positions);
 
-        RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Successfully deactivated!");
+        RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Successfully deactivated!");
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 
     CallbackReturn ActuatorsHardware::on_cleanup(const rclcpp_lifecycle::State & /*previous_state*/) {
-        RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Cleanup ...please wait...");
+        RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Cleanup ...please wait...");
 
         // Sending neutral command
         constexpr std::size_t n = 4;
         uint16_t positions[n] = { 1500, 1500, 1500, 1500 };
-	    RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Writing %d %d %d %d", positions[0], positions[1], positions[2], positions[3]);
+	    RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Writing %d %d %d %d", positions[0], positions[1], positions[2], positions[3]);
         driver_->SetMultiplePositions(n, 0, positions);
         
-        RCLCPP_DEBUG(rclcpp::get_logger("ActuatorsHardware"), "Successfully cleanup!");
+        RCLCPP_INFO(rclcpp::get_logger("ActuatorsHardware"), "Successfully cleanup!");
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 

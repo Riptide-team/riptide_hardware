@@ -15,25 +15,28 @@ using json = nlohmann::json;
 
 namespace riptide_hardware {
     void BatteryCardHardware::serial_callback(rtac::asio::Stream::Ptr /*stream*/, std::string* data, const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t count) {
-        std::scoped_lock<std::mutex> lock_(data_mutex_);
+        if (count > 0) {
+            // Parsing data
+            std::scoped_lock<std::mutex> lock_(data_mutex_);
+            json json_data = json::parse((*data).substr(0, count));
+            last_tension_ = json_data["volt"];
+            last_current_ = json_data["current"];
+            data_available_ = true;
 
-        // Parsing data
-        json json_data = json::parse((*data).substr(0, count));
-        last_tension_ = json_data["volt"];
-        last_current_ = json_data["current"];
-        data_available_ = true;
+            RCLCPP_INFO(rclcpp::get_logger("BatteryCardHardware"), "Received: %s", (*data).substr(0, count).c_str());
 
-        RCLCPP_INFO(rclcpp::get_logger("BatteryCardHardware"), "Received: %s", (*data).substr(0, count).c_str());
-
-        buffer_ = std::string(1024, '\0');
-        if(!serial_->async_read_until(buffer_.size(), (uint8_t*)buffer_.c_str(), '}',
-            std::bind(&BatteryCardHardware::serial_callback, this, serial_, &buffer_, std::placeholders::_1, std::placeholders::_2))
-        ) {
-            RCLCPP_FATAL(
-                rclcpp::get_logger("BatteryCardHardware"),
-                "Unable to launch async read until"
-            );
+            // Launching another read_until
+            buffer_ = std::string(1024, '\0');
+            if(!serial_->async_read_until(buffer_.size(), (uint8_t*)buffer_.c_str(), '}',
+                std::bind(&BatteryCardHardware::serial_callback, this, serial_, &buffer_, std::placeholders::_1, std::placeholders::_2))
+            ) {
+                RCLCPP_FATAL(
+                    rclcpp::get_logger("BatteryCardHardware"),
+                    "Unable to launch async read until"
+                );
+            }
         }
+
     }
 
     CallbackReturn BatteryCardHardware::on_init(const hardware_interface::HardwareInfo & info) {
@@ -135,16 +138,16 @@ namespace riptide_hardware {
         }
 
         // Launching an asynchronous read on the serial until '}' is on the string
-        // buffer_ = std::string(1024, '\0');
-        // if(!serial_->async_read_until(buffer_.size(), (uint8_t*)buffer_.c_str(), '}',
-        //     std::bind(&BatteryCardHardware::serial_callback, this, serial_, &buffer_, std::placeholders::_1, std::placeholders::_2))
-        // ) {
-        //     RCLCPP_FATAL(
-        //         rclcpp::get_logger("BatteryCardHardware"),
-        //         "Unable to launch async read until"
-        //     );
-        //     return hardware_interface::CallbackReturn::ERROR;
-        // }
+        buffer_ = std::string(1024, '\0');
+        if(!serial_->async_read_until(buffer_.size(), (uint8_t*)buffer_.c_str(), '}',
+            std::bind(&BatteryCardHardware::serial_callback, this, serial_, &buffer_, std::placeholders::_1, std::placeholders::_2))
+        ) {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("BatteryCardHardware"),
+                "Unable to launch async read until"
+            );
+            return hardware_interface::CallbackReturn::ERROR;
+        }
 
         RCLCPP_INFO(
             rclcpp::get_logger("BatteryCardHardware"),

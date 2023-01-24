@@ -18,6 +18,8 @@ namespace riptide_hardware {
         std::scoped_lock<std::mutex> lock_(json_mutex_);
         received_data_ = json::parse((*data).substr(0, count));
 
+
+
         buffer_ = std::string(1024, '\0');
         if(!serial_->async_read_until(buffer_.size(), (uint8_t*)buffer_.c_str(), '}',
             std::bind(&BatteryCardHardware::serial_callback, this, serial_, &buffer_, std::placeholders::_1, std::placeholders::_2))
@@ -83,6 +85,8 @@ namespace riptide_hardware {
         // Initialize state interfaces to std::quiet_NaN
         tension_ = std::numeric_limits<double>::quiet_NaN();
         current_ = std::numeric_limits<double>::quiet_NaN();
+
+        received_data_ = json::parse("\"volt\": 16.,\"current\": 0.}");
         
         RCLCPP_INFO(rclcpp::get_logger("BatteryCardHardware"), "Successfully initialized !");
         return hardware_interface::CallbackReturn::SUCCESS;

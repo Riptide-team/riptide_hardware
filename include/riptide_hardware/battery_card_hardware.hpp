@@ -23,7 +23,7 @@ namespace riptide_hardware {
     class BatteryCardHardware : public hardware_interface::SensorInterface {
 
         public:
-            BatteryCardHardware();
+            BatteryCardHardware() {};
 
             CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
 

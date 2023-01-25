@@ -89,15 +89,13 @@ namespace riptide_hardware {
     }
 
     hardware_interface::return_type PressureHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
-        hw_sensor_states_[0] = driver_->pressure();
-        hw_sensor_states_[1] = driver_->temperature();
-        hw_sensor_states_[2] = driver_->depth();
-        hw_sensor_states_[3] = driver_->altitude();
-
-        // Debug
-        std::stringstream ss;
-        std::copy(hw_sensor_states_.begin(), hw_sensor_states_.end(), std::ostream_iterator<float>(ss, " "));
-        RCLCPP_DEBUG(rclcpp::get_logger("PressureHardware"), "Pressure : %f", (ss.str()).c_str());
+        bool read = driver_->read_data();
+        if (read) {
+            hw_sensor_states_[0] = driver_->pressure();
+            hw_sensor_states_[1] = driver_->temperature();
+            hw_sensor_states_[2] = driver_->depth();
+            hw_sensor_states_[3] = driver_->altitude();
+        }
 
         return hardware_interface::return_type::OK;
     }

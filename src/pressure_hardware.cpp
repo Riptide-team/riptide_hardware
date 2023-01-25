@@ -112,8 +112,8 @@ namespace riptide_hardware {
     }
 
     hardware_interface::return_type PressureHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
-        std::scoped_lock<std::mutex> lock_(data_mutex_);
-        hw_sensor_states_ = driver_states_;
+        // std::scoped_lock<std::mutex> lock_(data_mutex_);
+        // hw_sensor_states_ = driver_states_;
 
         return hardware_interface::return_type::OK;
     }

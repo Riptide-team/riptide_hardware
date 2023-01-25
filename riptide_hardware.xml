@@ -14,4 +14,9 @@
             Riptide's actuators control through pololu maestro
         </description>
     </class>
+    <class name="riptide_hardware/PressureHardware" type="riptide_hardware::PressureHardware" base_class_type="hardware_interface::SensorInterface">
+        <description>
+            Riptide's pressure sensor hardware interface
+        </description>
+    </class>
 </library>

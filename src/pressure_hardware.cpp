@@ -90,6 +90,7 @@ namespace riptide_hardware {
 
         thread_running_.store(true);
         thread_ = std::thread(&PressureHardware::async_read_data, this);
+        thread_.detach();
 
         RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "Successfully activated!");
 
@@ -100,9 +101,6 @@ namespace riptide_hardware {
         RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "Deactivating ...please wait...");
 
         thread_running_.store(false);
-        if (thread_.joinable()) {
-            thread_.join();
-        }
 
         // Destruct the driver pointer
         driver_ = nullptr;

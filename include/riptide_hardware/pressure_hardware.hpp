@@ -1,6 +1,7 @@
 #ifndef PRESSURE_HARDWARE
 #define PRESSURE_HARDWARE
 
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -50,7 +51,7 @@ namespace riptide_hardware {
             std::vector<double> driver_states_;
 
             // Thread running
-            bool thread_running_ = false;
+            std::atomic_bool thread_running_;
 
             // Thread
             std::thread thread_;

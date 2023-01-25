@@ -16,7 +16,7 @@
 
 namespace riptide_hardware {
     void PressureHardware::async_read_data() {
-        while (thread_running_) {
+        while (true == thread_running_.load()) {
             bool read = driver_->read_data();
             if (read) {
                 std::scoped_lock<std::mutex> lock_(data_mutex_);
@@ -88,7 +88,7 @@ namespace riptide_hardware {
                 hw_sensor_states_[i] = 0;
         }
 
-        thread_running_ = true;
+        thread_running_.store(true);
         thread_ = std::thread(&PressureHardware::async_read_data, this);
 
         RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "Successfully activated!");
@@ -99,7 +99,7 @@ namespace riptide_hardware {
     CallbackReturn PressureHardware::on_deactivate(const rclcpp_lifecycle::State & /*previous_state*/) {
         RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "Deactivating ...please wait...");
 
-        thread_running_ = false;
+        thread_running_.store(false);
         if (thread_.joinable()) {
             thread_.join();
         }

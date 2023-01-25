@@ -2,6 +2,8 @@
 #define PRESSURE_HARDWARE
 
 #include <memory>
+#include <mutex>
+#include <thread>
 #include <string>
 #include <vector>
 

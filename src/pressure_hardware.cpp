@@ -10,6 +10,8 @@
 
 #include <algorithm>
 #include <memory>
+#include <thread>
+#include <mutex>
 
 
 namespace riptide_hardware {
@@ -85,7 +87,7 @@ namespace riptide_hardware {
         }
 
         thread_running_ = true;
-        thread_ = std::thread(std::bind(PressureHardware::async_read_data, this));
+        thread_ = std::thread(std::bind(&PressureHardware::async_read_data, this));
         thread_.detach();
 
         RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "Successfully activated!");

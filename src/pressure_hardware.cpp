@@ -13,6 +13,18 @@
 
 
 namespace riptide_hardware {
+    void PressureHardware::async_read_data() {
+        while (thread_running_) {
+            bool read = driver_->read_data();
+            if (read) {
+                std::scoped_lock<std::mutex> lock_(data_mutex_);
+                driver_states_[0] = driver_->pressure();
+                driver_states_[1] = driver_->temperature();
+                driver_states_[2] = driver_->depth();
+                driver_states_[3] = driver_->altitude();
+            }
+        }
+    }
 
     CallbackReturn PressureHardware::on_init(const hardware_interface::HardwareInfo & info) {
         if (hardware_interface::SensorInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS) {
@@ -72,6 +84,10 @@ namespace riptide_hardware {
                 hw_sensor_states_[i] = 0;
         }
 
+        thread_running_ = true;
+        thread_ = std::thread(std::bind(PressureHardware::async_read_data, this));
+        thread_.detach();
+
         RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "Successfully activated!");
 
         return hardware_interface::CallbackReturn::SUCCESS;
@@ -79,6 +95,11 @@ namespace riptide_hardware {
 
     CallbackReturn PressureHardware::on_deactivate(const rclcpp_lifecycle::State & /*previous_state*/) {
         RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "Deactivating ...please wait...");
+
+        thread_running_ = false;
+        if (thread_.joinable()) {
+            thread_.join();
+        }
 
         // Destruct the driver pointer
         driver_ = nullptr;
@@ -89,13 +110,8 @@ namespace riptide_hardware {
     }
 
     hardware_interface::return_type PressureHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
-        bool read = driver_->read_data();
-        if (read) {
-            hw_sensor_states_[0] = driver_->pressure();
-            hw_sensor_states_[1] = driver_->temperature();
-            hw_sensor_states_[2] = driver_->depth();
-            hw_sensor_states_[3] = driver_->altitude();
-        }
+        std::scoped_lock<std::mutex> lock_(data_mutex_);
+        hw_sensor_states_ = driver_states_;
 
         return hardware_interface::return_type::OK;
     }

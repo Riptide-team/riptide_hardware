@@ -20,10 +20,12 @@ namespace riptide_hardware {
             bool read = driver_->read_data();
             if (read) {
                 std::scoped_lock<std::mutex> lock_(data_mutex_);
-                driver_states_[0] = driver_->pressure();
-                driver_states_[1] = driver_->temperature();
-                driver_states_[2] = driver_->depth();
-                driver_states_[3] = driver_->altitude();
+                driver_states_ = std::vector<double> {
+                    driver_->pressure(),
+                    driver_->temperature(),
+                    driver_->depth(),
+                    driver_->altitude()
+                };
             }
         }
     }
@@ -87,7 +89,7 @@ namespace riptide_hardware {
         }
 
         thread_running_ = true;
-        // thread_ = std::thread(&PressureHardware::async_read_data, this);
+        thread_ = std::thread(&PressureHardware::async_read_data, this);
 
         RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "Successfully activated!");
 
@@ -111,8 +113,8 @@ namespace riptide_hardware {
     }
 
     hardware_interface::return_type PressureHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
-        // std::scoped_lock<std::mutex> lock_(data_mutex_);
-        // hw_sensor_states_ = driver_states_;
+        std::scoped_lock<std::mutex> lock_(data_mutex_);
+        hw_sensor_states_ = driver_states_;
 
         return hardware_interface::return_type::OK;
     }

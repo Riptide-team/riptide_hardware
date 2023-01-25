@@ -50,7 +50,7 @@ namespace riptide_hardware {
             std::vector<double> driver_states_;
 
             // Thread running
-            std::atomic_flag thread_running_ = ATOMIC_FLAG_INIT;
+            bool thread_running_ = false;
 
             // Thread
             std::thread thread_;

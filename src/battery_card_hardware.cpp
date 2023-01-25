@@ -18,7 +18,7 @@ namespace riptide_hardware {
         if (count > 0) {
             // Parsing data
             std::scoped_lock<std::mutex> lock_(data_mutex_);
-            RCLCPP_INFO(rclcpp::get_logger("BatteryCardHardware"), "Received: %s", (*data).substr(0, count).c_str());
+            RCLCPP_INFO(rclcpp::get_logger("BatteryCardHardware"), "Count: %ld, Received: %s", count, (*data).substr(0, count).c_str());
             json json_data = json::parse((*data).substr(0, count));
             last_tension_ = json_data["volt"];
             last_current_ = json_data["current"];

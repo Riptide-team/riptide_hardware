@@ -87,8 +87,7 @@ namespace riptide_hardware {
         }
 
         thread_running_ = true;
-        thread_ = std::thread(std::bind(&PressureHardware::async_read_data, this));
-        thread_.detach();
+        thread_ = std::thread(&PressureHardware::async_read_data, this);
 
         RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "Successfully activated!");
 

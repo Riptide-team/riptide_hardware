@@ -97,12 +97,23 @@ namespace riptide_hardware {
             return hardware_interface::CallbackReturn::ERROR;
         }
 
-        // Send a marco message
+        // Send MARCO message
         SeaScanEcho::Commands::Marco msg;
+        serial_->write(msg);
 
+        // Read POLO response
+        std::string data(1024, '\0');
+        int count = serial_->read_until(data.size(), (uint8_t*)data.c_str(), '\n');
 
-        
+        SeaScanEcho::Reply s(data.substr(0, count));
 
+        if (!s.Valid() && s.Fields[0] != "MSALT" && s.Fields[1] != "POLO") {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("EchosounderHardware"),
+                "Bad response to MARCO: '%s'", data.substr(0, count)
+            );
+            return hardware_interface::CallbackReturn::ERROR;
+        }
 
         RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "Successfully activated!");
 
@@ -121,8 +132,26 @@ namespace riptide_hardware {
     }
 
     hardware_interface::return_type EchosounderHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
-        tension_ = received_data_["volt"];
-        current_ = received_data_["current"];
+        // Send Trigger message
+        SeaScanEcho::Commands::Trigger msg;
+        serial_->write(msg);
+
+        // Read response
+        std::string data(1024, '\0');
+        int count = serial_->read_until(data.size(), (uint8_t*)data.c_str(), '\n');
+
+        SeaScanEcho::Reply s(data.substr(0, count));
+
+        if (!s.Valid() && s.Fields[0] != "MSALT" && s.Fields[1] != "DATA") {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("EchosounderHardware"),
+                "Bad response to MARCO: '%s'", data.substr(0, count)
+            );
+            return hardware_interface::CallbackReturn::ERROR;
+        }
+
+        // Getting the distance
+        distance_ = stod(s.Fields[2]);
 
         return hardware_interface::return_type::OK;
     }

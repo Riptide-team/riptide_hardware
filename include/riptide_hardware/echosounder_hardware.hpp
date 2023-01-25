@@ -33,8 +33,8 @@ namespace riptide_hardware {
             hardware_interface::return_type read(const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
         private:
-            // Exported sensor states
-            std::vector<double> hw_sensor_states_;
+            // Measured distance
+            double distance_;
 
             // Serial port
             std::string port_;

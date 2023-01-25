@@ -1,4 +1,4 @@
-#include "riptide_hardware/battery_card_hardware.hpp"
+#include "riptide_hardware/echosounder_hardware.hpp"
 
 #include "hardware_interface/sensor_interface.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
@@ -8,6 +8,7 @@
 
 #include <mutex>
 #include <string>
+#include <string_view>
 
 #include <rtac_asio/Stream.h>
 #include <rtac_asio/SerialStream.h>
@@ -98,8 +99,9 @@ namespace riptide_hardware {
         }
 
         // Send MARCO message
-        SeaScanEcho::Commands::Marco msg;
-        serial_->write(msg);
+        SeaScanEcho::Command msg = SeaScanEcho::Commands::Marco;
+        std::string command = msg();
+        serial_->write(command.size(), (const uint8_t*)command.c_str());
 
         // Read POLO response
         std::string data(1024, '\0');
@@ -107,10 +109,11 @@ namespace riptide_hardware {
 
         SeaScanEcho::Reply s(data.substr(0, count));
 
-        if (!s.Valid() && s.Fields[0] != "MSALT" && s.Fields[1] != "POLO") {
+        std::vector<std::string_view> fields = s.Fields();
+        if (!s.Valid() && fields[0] != "MSALT" && fields[1] != "POLO") {
             RCLCPP_FATAL(
                 rclcpp::get_logger("EchosounderHardware"),
-                "Bad response to MARCO: '%s'", data.substr(0, count)
+                "Bad response to MARCO: '%s'", (data.substr(0, count)).c_str()
             );
             return hardware_interface::CallbackReturn::ERROR;
         }
@@ -133,25 +136,26 @@ namespace riptide_hardware {
 
     hardware_interface::return_type EchosounderHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
         // Send Trigger message
-        SeaScanEcho::Commands::Trigger msg;
-        serial_->write(msg);
+        SeaScanEcho::Command msg = SeaScanEcho::Commands::Trigger;
+        std::string command = msg();
+        serial_->write(command.size(), (const uint8_t*)command.c_str());
 
         // Read response
         std::string data(1024, '\0');
         int count = serial_->read_until(data.size(), (uint8_t*)data.c_str(), '\n');
 
         SeaScanEcho::Reply s(data.substr(0, count));
-
-        if (!s.Valid() && s.Fields[0] != "MSALT" && s.Fields[1] != "DATA") {
+        std::vector<std::string_view> fields = s.Fields();
+        if (!s.Valid() && fields[0] != "MSALT" && fields[1] != "DATA") {
             RCLCPP_FATAL(
                 rclcpp::get_logger("EchosounderHardware"),
-                "Bad response to MARCO: '%s'", data.substr(0, count)
+                "Bad response to TRIGGER: '%s'", (data.substr(0, count)).c_str()
             );
-            return hardware_interface::CallbackReturn::ERROR;
+            return hardware_interface::return_type::ERROR;
         }
 
         // Getting the distance
-        distance_ = stod(s.Fields[2]);
+        distance_ = std::stod(std::string(fields[2]));
 
         return hardware_interface::return_type::OK;
     }

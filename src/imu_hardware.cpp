@@ -66,15 +66,15 @@ namespace riptide_hardware {
 
         // Instanciate the driver
         // try {
-        //     driver_ = std::make_unique<SpartonAHRSM1Driver>(port_, baud_rate_);
-        //     bool ret = driver_->reset();
-        //     if (!ret) {
-        //         RCLCPP_FATAL(
-        //             rclcpp::get_logger("IMUHardware"),
-        //             "Driver reset was not sucessful!"
-        //         );
-        //         return hardware_interface::CallbackReturn::ERROR;
-        //     }
+            driver_ = std::make_unique<SpartonAHRSM1Driver>(port_, baud_rate_);
+            bool ret = driver_->reset();
+            if (!ret) {
+                RCLCPP_FATAL(
+                    rclcpp::get_logger("IMUHardware"),
+                    "Driver reset was not sucessful!"
+                );
+                return hardware_interface::CallbackReturn::ERROR;
+            }
         // }
         // catch(boost::system::system_error& e) {
         //     RCLCPP_FATAL(

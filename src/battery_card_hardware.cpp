@@ -36,7 +36,6 @@ namespace riptide_hardware {
                 );
             }
         }
-
     }
 
     CallbackReturn BatteryCardHardware::on_init(const hardware_interface::HardwareInfo & info) {

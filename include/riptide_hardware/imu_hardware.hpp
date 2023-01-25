@@ -16,10 +16,10 @@ namespace riptide_hardware {
 
     using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
-    class SpartonAHRSM1Hardware : public hardware_interface::SensorInterface {
+    class IMUHardware : public hardware_interface::SensorInterface {
 
         public:
-            SpartonAHRSM1Hardware() {};
+            IMUHardware() {};
 
             CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
 

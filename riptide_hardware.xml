@@ -1,5 +1,5 @@
 <library path="riptide_hardware">
-    <class name="riptide_hardware/SpartonAHRSM1Hardware" type="riptide_hardware::SpartonAHRSM1Hardware" base_class_type="hardware_interface::SensorInterface">
+    <class name="riptide_hardware/IMUHardware" type="riptide_hardware::IMUHardware" base_class_type="hardware_interface::SensorInterface">
         <description>
             Sparton AHRS M1 Hardware Interface
         </description>

@@ -65,24 +65,24 @@ namespace riptide_hardware {
         RCLCPP_INFO(rclcpp::get_logger("IMUHardware"), "Activating ...please wait...");
 
         // Instanciate the driver
-        try {
-            driver_ = std::make_unique<SpartonAHRSM1Driver>(port_, baud_rate_);
-            bool ret = driver_->reset();
-            if (!ret) {
-                RCLCPP_FATAL(
-                    rclcpp::get_logger("IMUHardware"),
-                    "Driver reset was not sucessful!"
-                );
-                return hardware_interface::CallbackReturn::ERROR;
-            }
-        }
-        catch(boost::system::system_error& e) {
-            RCLCPP_FATAL(
-                rclcpp::get_logger("IMUHardware"),
-                "Serial error: '%s'", e.what()
-            );
-            return hardware_interface::CallbackReturn::ERROR;
-        }
+        // try {
+        //     driver_ = std::make_unique<SpartonAHRSM1Driver>(port_, baud_rate_);
+        //     bool ret = driver_->reset();
+        //     if (!ret) {
+        //         RCLCPP_FATAL(
+        //             rclcpp::get_logger("IMUHardware"),
+        //             "Driver reset was not sucessful!"
+        //         );
+        //         return hardware_interface::CallbackReturn::ERROR;
+        //     }
+        // }
+        // catch(boost::system::system_error& e) {
+        //     RCLCPP_FATAL(
+        //         rclcpp::get_logger("IMUHardware"),
+        //         "Serial error: '%s'", e.what()
+        //     );
+        //     return hardware_interface::CallbackReturn::ERROR;
+        // }
 
         // Set joint state
         for (uint i = 0; i < info_.sensors[0].state_interfaces.size(); ++i) {

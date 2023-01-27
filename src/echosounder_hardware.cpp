@@ -175,7 +175,7 @@ namespace riptide_hardware {
 
         SeaScanEcho::Reply s(data.substr(0, count));
         std::vector<std::string> fields = s.Fields();
-        if (!s.Valid() && fields[0] != "MSALT" && fields[1] != "DATA") {
+        if (!s.Valid() && fields[0] != "MSALT" && fields[1] != "ACK") {
             RCLCPP_FATAL(
                 rclcpp::get_logger("EchosounderHardware"),
                 "Bad response to TRIGGER: '%s'", (data.substr(0, count)).c_str()

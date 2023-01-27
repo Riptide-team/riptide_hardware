@@ -174,7 +174,7 @@ namespace riptide_hardware {
         int count = serial_->read_until(data.size(), (uint8_t*)data.c_str(), '\n');
 
         SeaScanEcho::Reply s(data.substr(0, count));
-        std::vector<std::string_view> fields = s.Fields();
+        std::vector<std::string> fields = s.Fields();
         if (!s.Valid() && fields[0] != "MSALT" && fields[1] != "DATA") {
             RCLCPP_FATAL(
                 rclcpp::get_logger("EchosounderHardware"),

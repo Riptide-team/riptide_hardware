@@ -105,6 +105,8 @@ namespace riptide_hardware {
 
         RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "RESET message witten! %d/%ld char written", count, command.size());
 
+        serial_->flush();
+
         // Send MARCO message
         msg = SeaScanEcho::Commands::Marco;
         command = msg();
@@ -115,7 +117,8 @@ namespace riptide_hardware {
         // Read POLO response
         std::string data(1024, '\0');
         count = serial_->read_until(data.size(), (uint8_t*)data.c_str(), '\n');
-        RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "POLO message read!");
+
+        RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "POLO message read! %s", (data.substr(0, count)).c_str());
 
         SeaScanEcho::Reply s(data.substr(0, count));
 

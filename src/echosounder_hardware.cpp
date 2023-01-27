@@ -108,7 +108,7 @@ namespace riptide_hardware {
         // Send MARCO message
         msg = SeaScanEcho::Commands::Marco;
         command = msg();
-        int count = serial_->write(command.size(), (const uint8_t*)command.c_str());
+        count = serial_->write(command.size(), (const uint8_t*)command.c_str());
 
         RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "MARCO message witten! %d/%ld char written", count, command.size());
 

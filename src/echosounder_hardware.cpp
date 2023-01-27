@@ -105,7 +105,19 @@ namespace riptide_hardware {
 
         RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "RESET message witten! %d/%ld char written", count, command.size());
 
-        serial_->flush();
+        std::string data(1024, '\0');
+        count = serial_->read_until(data.size(), (uint8_t*)data.c_str(), '\n');
+
+        SeaScanEcho::Reply s_reset(data.substr(0, count));
+
+        std::vector<std::string_view> fields = s_reset.Fields();
+        if (!s_reset.Valid() && fields[0] != "MSALT" && fields[1] != "INFO") {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("EchosounderHardware"),
+                "Bad response to MARCO: '%s'", (data.substr(0, count)).c_str()
+            );
+            return hardware_interface::CallbackReturn::ERROR;
+        }
 
         // Send MARCO message
         msg = SeaScanEcho::Commands::Marco;
@@ -115,15 +127,14 @@ namespace riptide_hardware {
         RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "MARCO message witten! %d/%ld char written", count, command.size());
 
         // Read POLO response
-        std::string data(1024, '\0');
         count = serial_->read_until(data.size(), (uint8_t*)data.c_str(), '\n');
 
         RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "POLO message read! %s", (data.substr(0, count)).c_str());
 
-        SeaScanEcho::Reply s(data.substr(0, count));
+        SeaScanEcho::Reply s_polo(data.substr(0, count));
 
-        std::vector<std::string_view> fields = s.Fields();
-        if (!s.Valid() && fields[0] != "MSALT" && fields[1] != "POLO") {
+        fields = s_polo.Fields();
+        if (!s_polo.Valid() && fields[0] != "MSALT" && fields[1] != "POLO") {
             RCLCPP_FATAL(
                 rclcpp::get_logger("EchosounderHardware"),
                 "Bad response to MARCO: '%s'", (data.substr(0, count)).c_str()

@@ -111,6 +111,11 @@ namespace riptide_hardware {
         SeaScanEcho::Reply s_reset(data.substr(0, count));
 
         std::vector<std::string_view> fields = s_reset.Fields();
+
+        for (const auto f: fields) {
+            std::cout << f << " | ";
+        }
+        std::cout << std::endl;
         if (!s_reset.Valid() && fields[0] != "MSALT" && fields[1] != "INFO") {
             RCLCPP_FATAL(
                 rclcpp::get_logger("EchosounderHardware"),

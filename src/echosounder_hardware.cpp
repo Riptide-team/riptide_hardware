@@ -114,7 +114,7 @@ namespace riptide_hardware {
         if (!s_reset.Valid() && fields[0] != "MSALT" && fields[1] != "INFO") {
             RCLCPP_FATAL(
                 rclcpp::get_logger("EchosounderHardware"),
-                "Bad response to RESET: '%s'", (data.substr(0, count)).c_str()
+                "Bad response to RESET: '%s' : got %s, %s", (data.substr(0, count)).c_str(), (fields[0]).c_str(), (fields[1]).c_str()
             );
             return hardware_interface::CallbackReturn::ERROR;
         }

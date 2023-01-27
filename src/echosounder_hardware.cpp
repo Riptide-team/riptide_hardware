@@ -111,7 +111,7 @@ namespace riptide_hardware {
 
         std::vector<std::string> fields = s_reset.Fields();
 
-        for (const auto f: fields) {
+        for (const auto &f: fields) {
             std::cout << f << " | ";
         }
         std::cout << std::endl;

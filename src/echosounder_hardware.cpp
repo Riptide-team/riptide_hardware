@@ -114,7 +114,7 @@ namespace riptide_hardware {
         if (!s_reset.Valid() && fields[0] != "MSALT" && fields[1] != "INFO") {
             RCLCPP_FATAL(
                 rclcpp::get_logger("EchosounderHardware"),
-                "Bad response to MARCO: '%s'", (data.substr(0, count)).c_str()
+                "Bad response to RESET: '%s'", (data.substr(0, count)).c_str()
             );
             return hardware_interface::CallbackReturn::ERROR;
         }
@@ -127,6 +127,7 @@ namespace riptide_hardware {
         RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "MARCO message witten! %d/%ld char written", count, command.size());
 
         // Read POLO response
+        data = std::string(1024, '\0');
         count = serial_->read_until(data.size(), (uint8_t*)data.c_str(), '\n');
 
         RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "POLO message read! %s", (data.substr(0, count)).c_str());

@@ -98,9 +98,16 @@ namespace riptide_hardware {
             return hardware_interface::CallbackReturn::ERROR;
         }
 
-        // Send MARCO message
-        SeaScanEcho::Command msg = SeaScanEcho::Commands::Marco;
+        // Send RESET message
+        SeaScanEcho::Command msg = SeaScanEcho::Commands::Reset;
         std::string command = msg();
+        int count = serial_->write(command.size(), (const uint8_t*)command.c_str());
+
+        RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "RESET message witten! %d/%ld char written", count, command.size());
+
+        // Send MARCO message
+        msg = SeaScanEcho::Commands::Marco;
+        command = msg();
         int count = serial_->write(command.size(), (const uint8_t*)command.c_str());
 
         RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "MARCO message witten! %d/%ld char written", count, command.size());

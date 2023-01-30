@@ -110,11 +110,6 @@ namespace riptide_hardware {
         SeaScanEcho::Reply s_reset(data.substr(0, count));
 
         std::vector<std::string> fields = s_reset.Fields();
-
-        for (const auto &f: fields) {
-            std::cout << f << " | ";
-        }
-        std::cout << std::endl;
         if (!s_reset.Valid() && fields[0] != "MSALT" && fields[1] != "INFO") {
             RCLCPP_FATAL(
                 rclcpp::get_logger("EchosounderHardware"),
@@ -183,8 +178,26 @@ namespace riptide_hardware {
             return hardware_interface::return_type::ERROR;
         }
 
-        // Getting the distance
-        distance_ = std::stod(std::string(fields[2]));
+        // Read response
+        data = std::string(1024, '\0');
+        count = serial_->read_until(data.size(), (uint8_t*)data.c_str(), '\n');
+
+        SeaScanEcho::Reply s_data(data.substr(0, count));
+        std::vector<std::string> fields_data = s_data.Fields();
+        if (!s_data.Valid() && fields_data[0] != "MSALT" && fields_data[1] != "DATA") {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("EchosounderHardware"),
+                "Bad DATA: '%s'", (data.substr(0, count)).c_str()
+            );
+            return hardware_interface::return_type::ERROR;
+        }
+
+        // Getting the unfiltered distance (filtered distance in fields_data[2])
+        distance_ = std::stod(std::string(fields_data[3]));
+
+        // Read IMAGE
+        data = std::string(1024, '\0');
+        count = serial_->read_until(data.size(), (uint8_t*)data.c_str(), '\n');
 
         return hardware_interface::return_type::OK;
     }

@@ -102,7 +102,7 @@ namespace riptide_hardware {
         std::string command = msg();
         int count = serial_->write(command.size(), (const uint8_t*)command.c_str());
 
-        RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "RESET message witten! %d/%ld char written", count, command.size());
+        RCLCPP_DEBUG(rclcpp::get_logger("EchosounderHardware"), "RESET message witten! %d/%ld char written", count, command.size());
 
         std::string data(1024, '\0');
         count = serial_->read_until(data.size(), (uint8_t*)data.c_str(), '\n');
@@ -123,13 +123,13 @@ namespace riptide_hardware {
         command = msg();
         count = serial_->write(command.size(), (const uint8_t*)command.c_str());
 
-        RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "MARCO message witten! %d/%ld char written", count, command.size());
+        RCLCPP_DEBUG(rclcpp::get_logger("EchosounderHardware"), "MARCO message witten! %d/%ld char written", count, command.size());
 
         // Read POLO response
         data = std::string(1024, '\0');
         count = serial_->read_until(data.size(), (uint8_t*)data.c_str(), '\n');
 
-        RCLCPP_INFO(rclcpp::get_logger("EchosounderHardware"), "POLO message read! %s", (data.substr(0, count)).c_str());
+        RCLCPP_DEBUG(rclcpp::get_logger("EchosounderHardware"), "POLO message read! %s", (data.substr(0, count)).c_str());
 
         SeaScanEcho::Reply s_polo(data.substr(0, count));
 
@@ -193,10 +193,13 @@ namespace riptide_hardware {
         }
 
         // Getting the unfiltered distance (filtered distance in fields_data[2])
-        distance_ = std::stod(std::string(fields_data[3]));
+        distance_ = std::stod(fields_data[3]);
+
+        RCLCPP_DEBUG(rclcpp::get_logger("EchosounderHardware"), "GOT %s", (data.substr(0, count)).c_str());
+        RCLCPP_DEBUG(rclcpp::get_logger("EchosounderHardware"), "Distance: %s, %f", (fields_data[3]).c_str(), distance_);
 
         // Read IMAGE
-        data = std::string(1024, '\0');
+        data = std::string(1048, '\0');
         count = serial_->read_until(data.size(), (uint8_t*)data.c_str(), '\n');
 
         return hardware_interface::return_type::OK;

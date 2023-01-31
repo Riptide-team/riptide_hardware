@@ -18,23 +18,28 @@ namespace riptide_hardware {
         if (count > 0) {
             // Parsing data
             std::scoped_lock<std::mutex> lock_(data_mutex_);
-            json json_data = json::parse((*data).substr(0, count));
-            last_tension_ = json_data["volt"];
-            last_current_ = json_data["current"];
-            data_available_ = true;
+            try {
+                json json_data = json::parse((*data).substr(0, count));
+                last_tension_ = json_data["volt"];
+                last_current_ = json_data["current"];
+                data_available_ = true;
 
-            RCLCPP_DEBUG(rclcpp::get_logger("BatteryCardHardware"), "Count: %ld, Received: %s", count, (*data).substr(0, count).c_str());
-
-            // Launching another read_until
-            buffer_ = std::string(1024, '\0');
-            if(!serial_->async_read_until(buffer_.size(), (uint8_t*)buffer_.c_str(), '}',
-                std::bind(&BatteryCardHardware::serial_callback, this, serial_, &buffer_, std::placeholders::_1, std::placeholders::_2))
-            ) {
-                RCLCPP_FATAL(
-                    rclcpp::get_logger("BatteryCardHardware"),
-                    "Unable to launch async read until"
-                );
+                RCLCPP_DEBUG(rclcpp::get_logger("BatteryCardHardware"), "Count: %ld, Received: %s", count, (*data).substr(0, count).c_str());
             }
+            catch (...) {
+                RCLCPP_WARN(rclcpp::get_logger("BatteryCardHardware"), "Error while parsing json data. This error could occur sometimes but should not be recurring");
+            }
+        }
+
+        // Launching another read_until
+        buffer_ = std::string(1024, '\0');
+        if(!serial_->async_read_until(buffer_.size(), (uint8_t*)buffer_.c_str(), '}',
+            std::bind(&BatteryCardHardware::serial_callback, this, serial_, &buffer_, std::placeholders::_1, std::placeholders::_2))
+        ) {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("BatteryCardHardware"),
+                "Unable to launch async read until"
+            );
         }
     }
 

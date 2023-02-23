@@ -45,7 +45,7 @@ namespace riptide_hardware {
         }
 
         // Getting calibration pressure
-        if (info_.hardware_parameters.find("calibration_pressure") == info_.hardware_parameters.end()) {
+        if (info_.hardware_parameters.find("calibration_pressure") != info_.hardware_parameters.end()) {
             calibration_pressure_ = std::stod(info_.hardware_parameters["calibration_pressure"]);
         }
         else {

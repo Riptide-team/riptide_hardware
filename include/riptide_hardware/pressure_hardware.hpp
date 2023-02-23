@@ -58,6 +58,9 @@ namespace riptide_hardware {
 
             // Async read data
             void async_read_data();
+
+            // Calibration pressure
+            double calibration_pressure_;
     };
 } // riptide_hardware
 

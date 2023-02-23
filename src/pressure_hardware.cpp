@@ -23,6 +23,7 @@ namespace riptide_hardware {
                 driver_states_ = std::vector<double> {
                     driver_->pressure(),
                     driver_->temperature(),
+                    driver_->pressure() - 
                     driver_->depth(),
                     driver_->altitude()
                 };
@@ -42,6 +43,14 @@ namespace riptide_hardware {
                 "You need to specify the serial port in ros2_control urdf tag as param!"
             );
             return hardware_interface::CallbackReturn::ERROR;
+        }
+
+        // Getting calibration pressure
+        if (info_.hardware_parameters.find("calibration_pressure") == info_.hardware_parameters.end()) {
+            calibration_pressure_ = std::stod(info_.hardware_parameters["calibration_pressure"]);
+        }
+        else {
+            calibration_pressure_ = 1013.0;
         }
 
         // Getting port and baud_rate parameters

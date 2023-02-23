@@ -24,7 +24,6 @@ namespace riptide_hardware {
                     driver_->pressure(),
                     driver_->temperature(),
                     (driver_->pressure() - calibration_pressure_) / 100.,
-                    driver_->depth(),
                     driver_->altitude()
                 };
             }

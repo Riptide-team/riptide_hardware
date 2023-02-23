@@ -52,6 +52,8 @@ namespace riptide_hardware {
             calibration_pressure_ = 1013.0;
         }
 
+        RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "Calibration pressure: %f", calibration_pressure_);
+
         // Getting port and baud_rate parameters
         port_ = info_.hardware_parameters["port"];
         

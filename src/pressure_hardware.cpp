@@ -23,7 +23,7 @@ namespace riptide_hardware {
                 driver_states_ = std::vector<double> {
                     driver_->pressure(),
                     driver_->temperature(),
-                    driver_->pressure() - 
+                    (driver_->pressure() - calibration_pressure_) / 100.,
                     driver_->depth(),
                     driver_->altitude()
                 };

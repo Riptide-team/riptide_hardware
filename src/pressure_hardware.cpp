@@ -23,7 +23,7 @@ namespace riptide_hardware {
                 driver_states_ = std::vector<double> {
                     driver_->pressure(),
                     driver_->temperature(),
-                    (driver_->pressure() - calibration_pressure_) / 100.,
+                    driver_->depth(),
                     driver_->altitude()
                 };
             }
@@ -50,6 +50,14 @@ namespace riptide_hardware {
         }
         else {
             calibration_pressure_ = 1013.0;
+        }
+
+        // Getting fluid density
+        if (info_.hardware_parameters.find("fluid_density") != info_.hardware_parameters.end()) {
+            fluid_density_ = std::stod(info_.hardware_parameters["fluid_density"]);
+        }
+        else {
+            fluid_density_ = 1023.6;
         }
 
         RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "Calibration pressure: %f", calibration_pressure_);
@@ -91,6 +99,12 @@ namespace riptide_hardware {
             );
             return hardware_interface::CallbackReturn::ERROR;
         }
+
+        // Setting fluid density
+        driver_->setFluidDensity(fluid_density_);
+        
+        // Setting calibration pressure
+        driver_->setCalibrationPressure(calibration_pressure_);
 
         // Set joint state
         for (uint8_t i = 0; i < info_.sensors[0].state_interfaces.size(); ++i) {

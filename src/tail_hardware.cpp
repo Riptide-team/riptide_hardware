@@ -36,11 +36,11 @@ namespace riptide_hardware {
                 value = static_cast<std::uint16_t>(1500 * std::clamp(double(hw_commands_positions_[i]), -M_PI/3., M_PI/3.) / M_PI + 1500);
             }
 
-            // // swap the bytes
-            // std::reverse(
-            //     reinterpret_cast<char*>(&value),
-            //     reinterpret_cast<char*>(&value) + sizeof(value)
-            // );
+            // Correcting endian before sending to Arduino
+            std::reverse(
+                reinterpret_cast<char*>(&value),
+                reinterpret_cast<char*>(&value) + sizeof(value)
+            );
 
             std::memcpy(commands + 2*i, &value, sizeof(std::uint16_t));
         }
@@ -59,17 +59,18 @@ namespace riptide_hardware {
             std::lock_guard<std::mutex> lock_(m_read_);
             data_consumable_ = true;
             if((count == 21) and (read_buffer_[20] == '\n')) {
+                // Correcting endian for incoming values from Arduino
+                for (std::size_t i=0; i<20; ++i) {
+                    std::reverse(
+                        reinterpret_cast<char*>(&read_buffer_[i]),
+                        reinterpret_cast<char*>(&read_buffer_[i]) + sizeof(read_buffer_[i])
+                    );
+                }
+
+                // Getting values
                 for(std::size_t i=0; i < 10; ++i) {
-                    // swap the bytes
-                    std::reverse(
-                        reinterpret_cast<char*>(&read_buffer_[2*i]),
-                        reinterpret_cast<char*>(&read_buffer_[2*i]) + sizeof(read_buffer_[2*i])
-                    );
-                    std::reverse(
-                        reinterpret_cast<char*>(&read_buffer_[2*i+1]),
-                        reinterpret_cast<char*>(&read_buffer_[2*i+1]) + sizeof(read_buffer_[2*i+1])
-                    );
-                    read_data_[i] = static_cast<double>(static_cast<std::uint8_t>(read_buffer_[2*i]) * 255 + static_cast<std::uint8_t>(read_buffer_[2*i+1]));
+                    std::uint16_t value = (static_cast<std::uint8_t>(read_buffer_[2*i]) << 8) + static_cast<std::uint8_t>(read_buffer_[2*i+1]);
+                    read_data_[i] = value;
                 }
             }
             else {

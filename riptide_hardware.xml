@@ -24,4 +24,9 @@
             Riptide's pressure sensor hardware interface
         </description>
     </class>
+    <class name="riptide_hardware/TailHardware" type="riptide_hardware::TailHardware" base_class_type="hardware_interface::SystemInterface">
+        <description>
+            Riptide's tail hardware interface for actuator state/command interface and RC Receiver state interface
+        </description>
+    </class>
 </library>

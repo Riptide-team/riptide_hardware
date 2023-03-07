@@ -35,7 +35,7 @@ FetchContent_Declare(rtac_asio GIT_REPOSITORY https://github.com/pnarvor/rtac_as
 FetchContent_MakeAvailable(rtac_asio)
 
 # Compile riptide_hardware
-add_library(${PROJECT_NAME} SHARED src/actuators_hardware.cpp src/imu_hardware.cpp src/battery_card_hardware.cpp src/pressure_hardware.cpp src/echosounder_hardware.cpp)
+add_library(${PROJECT_NAME} SHARED src/actuators_hardware.cpp src/imu_hardware.cpp src/battery_card_hardware.cpp src/pressure_hardware.cpp src/echosounder_hardware.cpp src/tail_hardware.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 target_link_libraries(${PROJECT_NAME} sparton_ahrs_m1_driver pololu_maestro_driver sea_scan_echo_driver ms5837_driver nlohmann_json::nlohmann_json rtac_asio)
 ament_target_dependencies(

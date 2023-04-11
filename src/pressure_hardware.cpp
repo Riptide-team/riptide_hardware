@@ -21,10 +21,10 @@ namespace riptide_hardware {
             if (read) {
                 std::scoped_lock<std::mutex> lock_(data_mutex_);
                 driver_states_ = std::vector<double> {
-                    driver_->pressure(),
-                    driver_->temperature(),
-                    driver_->depth(),
-                    driver_->altitude()
+                    driver_->pressure()*100,    // Pa
+                    driver_->temperature(),     // °C
+                    driver_->depth(),           // m
+                    driver_->altitude()         // m
                 };
             }
         }
@@ -49,7 +49,7 @@ namespace riptide_hardware {
             calibration_pressure_ = std::stod(info_.hardware_parameters["calibration_pressure"]);
         }
         else {
-            calibration_pressure_ = 1013.0;
+            calibration_pressure_ = 101300.0;   // Pa
         }
 
         // Getting fluid density
@@ -57,7 +57,7 @@ namespace riptide_hardware {
             fluid_density_ = std::stod(info_.hardware_parameters["fluid_density"]);
         }
         else {
-            fluid_density_ = 1023.6;
+            fluid_density_ = 1023.6;    // kg.m^{-3}
         }
 
         RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "Calibration pressure: %f", calibration_pressure_);

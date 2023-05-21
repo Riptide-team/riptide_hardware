@@ -15,6 +15,10 @@
 #include <rtac_asio/Stream.h>
 #include <rtac_asio/SerialStream.h>
 
+#include <nmeaparse/nmea.h>
+
+#include "riptide_hardware/actuators_commands.hpp"
+
 
 namespace riptide_hardware {
 
@@ -108,6 +112,18 @@ namespace riptide_hardware {
         }
     }
 
+    void TailHardware::RTACT_handler(const nmea::NMEASentence& n){
+        // Getting each actuators commands
+        std::vector<uint16_t> commands;
+        for (size_t i = 0; i < n.parameters.size(); ++i){
+            commands.push_back(std::stoul (n.parameters[i], nullptr, 10));
+		}
+
+        // Store in actuators_commands with time
+        auto time = std::chrono::system_clock::now();
+        actuators_commands_.SetCommands(time, commands);
+    }
+
     CallbackReturn TailHardware::on_init(const hardware_interface::HardwareInfo & info_) {
         if (hardware_interface::SystemInterface::on_init(info_) != hardware_interface::CallbackReturn::SUCCESS) {
             return hardware_interface::CallbackReturn::ERROR;
@@ -144,7 +160,7 @@ namespace riptide_hardware {
             "Serial communication: %s:%i", port_.c_str(), baud_rate_
         );
 
-        write_timeout_ = 1000; // 1000 ms of timeot to write commands
+        write_timeout_ = 1000; // 1000 ms of timeout to write commands
 
         duration_expiration_ = rclcpp::Duration(1, 0); // 1 s, 0 ns
 

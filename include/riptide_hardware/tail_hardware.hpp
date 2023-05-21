@@ -15,6 +15,11 @@
 #include <rtac_asio/Stream.h>
 #include <rtac_asio/SerialStream.h>
 
+#include <nmeaparse/nmea.h>
+
+#include "riptide_hardware/actuators_commands.hpp"
+
+
 namespace riptide_hardware {
 
     using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
@@ -50,6 +55,9 @@ namespace riptide_hardware {
             // Serial baud rate
             unsigned int baud_rate_;
 
+            // NMEA parser
+            nmea::NMEAParser parser;
+
             // Expiration duration
             rclcpp::Duration duration_expiration_;
 
@@ -82,6 +90,12 @@ namespace riptide_hardware {
 
             // Read callback
             void read_callback(const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t count);
+
+            // Actuators Commands
+            ActuatorsCommands actuators_commands_;
+
+            // RTACT Handler
+            void RTACT_handler(const nmea::NMEASentence& n);
     };
 } // riptide_hardware
 

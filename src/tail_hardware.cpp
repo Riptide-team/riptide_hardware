@@ -108,7 +108,6 @@ namespace riptide_hardware {
         // Store in actuators_commands with time
         auto time = std::chrono::system_clock::now();
         actuators_commands_.SetCommands(time, commands);
-        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Read %d %d %d %d", commands[0], commands[1], commands[2], commands[3]);
     }
 
     CallbackReturn TailHardware::on_init(const hardware_interface::HardwareInfo & info_) {
@@ -277,6 +276,7 @@ namespace riptide_hardware {
         if (get_commands.first && std::holds_alternative<std::vector<double>>(get_commands.second)) {
             std::vector<double> commands = std::get<std::vector<double>>(get_commands.second);
             std::copy(std::cbegin(commands), std::cend(commands), std::begin(hw_states_positions_));
+            RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Read %d %d %d %d", hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
         }
         else {
             // Eventually generate error when get_commands.second exceed a value ...

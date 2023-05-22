@@ -91,8 +91,11 @@ namespace riptide_hardware {
             // Read callback
             void read_callback(const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t count);
 
+            // Actuators mutex
+            std::mutex actuators_mutex_;
+            
             // Actuators Commands
-            ActuatorsCommands actuators_commands_;
+            std::unique_ptr<ActuatorsCommands> actuators_commands_ = nullptr;
 
             // RTACT Handler
             void RTACT_handler(const nmea::NMEASentence& n);

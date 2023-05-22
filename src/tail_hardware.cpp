@@ -105,9 +105,12 @@ namespace riptide_hardware {
             }
 		}
 
-        // Store in actuators_commands with time
+        // Getting time
         auto time = std::chrono::system_clock::now();
-        actuators_commands_.SetCommands(time, commands);
+
+        // Store in actuators_commands with time
+        std::scoped_lock<std::mutex> lock(actuators_mutex_);
+        actuators_commands_ = std::make_unique<ActuatorsCommands>(time, commands);
     }
 
     CallbackReturn TailHardware::on_init(const hardware_interface::HardwareInfo & info_) {
@@ -271,15 +274,13 @@ namespace riptide_hardware {
         time_read_ = time;
 
         // Getting actuators commands
-        auto get_commands = actuators_commands_.GetCommands();
-
-        if (get_commands.first && std::holds_alternative<std::vector<double>>(get_commands.second)) {
-            std::vector<double> commands = std::get<std::vector<double>>(get_commands.second);
-            std::copy(std::cbegin(commands), std::cend(commands), std::begin(hw_states_positions_));
-            RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Read %d %d %d %d", hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
-        }
-        else {
-            // Eventually generate error when get_commands.second exceed a value ...
+        std::scoped_lock<std::mutex> lock(actuators_mutex_);
+        if (actuators_commands_ != nullptr) {
+            hw_states_positions_[0] = actuators_commands_->Thruster();
+            hw_states_positions_[1] = actuators_commands_->DFinAngle();
+            hw_states_positions_[2] = actuators_commands_->PFinAngle();
+            hw_states_positions_[3] = actuators_commands_->SFinAngle();
+            RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Read %f %f %f %f", hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
         }
 
         return hardware_interface::return_type::OK;

@@ -104,6 +104,9 @@ namespace riptide_hardware {
         // Store in actuators_commands with time
         std::scoped_lock<std::mutex> lock(rc_mutex_);
         rc_commands_ = std::make_unique<RCCommands<rclcpp::Time>>(time_read_, commands);
+
+        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d", commands[0], commands[1], commands[2], commands[3]);
+
     }
 
     void TailHardware::RTRCR_handler(const nmea::NMEASentence& n) {

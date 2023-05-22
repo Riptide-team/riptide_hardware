@@ -12,7 +12,7 @@
 namespace riptide_hardware{
     class ActuatorsCommands {
         public:
-            ActuatorsCommands();
+            ActuatorsCommands() {};
 
             // Commands setter
             void SetCommands(const std::chrono::system_clock::time_point time, const uint16_t thruster_us, const uint16_t d_fin_us, const uint16_t p_fin_us, const uint16_t s_fin_us) {

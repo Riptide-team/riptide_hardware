@@ -19,12 +19,12 @@
 
 #include "riptide_hardware/actuators_commands.hpp"
 #include "riptide_hardware/rc_commands.hpp"
+#include "riptide_hardware/multiplexer_commands.hpp"
 
 
 namespace riptide_hardware {
 
     std::size_t TailHardware::serial_write_actuators_commands() {
-
         nmea::NMEACommand command;
         command.name = "RHACT";
         command.message = "";
@@ -140,6 +140,39 @@ namespace riptide_hardware {
         actuators_commands_ = std::make_unique<ActuatorsCommands<rclcpp::Time>>(time_read_, commands);
     }
 
+    void TailHardware::RTMPX_handler(const nmea::NMEASentence& n) {
+        // Getting multiplexer infos
+        double able_control;
+        double remaining_time;
+
+        try {
+            able_control = std::stof(n.parameters[0]);
+            remaining_time = std::stof(n.parameters[1]);
+        }
+        catch (const std::invalid_argument& ia) {
+            RCLCPP_DEBUG(
+                rclcpp::get_logger("TailHardware"),
+                "RTMPX invalid argument parsing error (%s)", ia.what()
+            );
+        }
+        catch (const std::out_of_range& oor) {
+            RCLCPP_DEBUG(
+                rclcpp::get_logger("TailHardware"),
+                "RTMPX out or range parsing error (%s)", oor.what()
+            );
+        }
+        catch (const std::exception& e) {
+            RCLCPP_DEBUG(
+                rclcpp::get_logger("TailHardware"),
+                "RTMPX parsing error (%s)", e.what()
+            );
+        }
+
+        // Store in multiplexer infos with time
+        std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
+        multiplexer_commands_ = std::make_unique<MultiplexerCommands<rclcpp::Time>>(time_read_, able_control, remaining_time);
+    }
+
     CallbackReturn TailHardware::on_init(const hardware_interface::HardwareInfo & info_) {
         if (hardware_interface::SystemInterface::on_init(info_) != hardware_interface::CallbackReturn::SUCCESS) {
             return hardware_interface::CallbackReturn::ERROR;
@@ -190,6 +223,9 @@ namespace riptide_hardware {
         // Adding RTRCR handler to the nmea parser
         parser.setSentenceHandler("RTRCR", std::bind(&TailHardware::RTRCR_handler, this, std::placeholders::_1));
 
+        // Adding RTMPX handler to the nmea parser
+        parser.setSentenceHandler("RTMPX", std::bind(&TailHardware::RTMPX_handler, this, std::placeholders::_1));
+
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 
@@ -203,9 +239,15 @@ namespace riptide_hardware {
         }
 
         // export RC Receiver state interfaces
-        for (uint i = 4; i < 10; ++i) {
+        for (uint i = 4; i<10; ++i) {
             state_interfaces.emplace_back(hardware_interface::StateInterface(
             info_.sensors[0].name, info_.sensors[0].state_interfaces[i-4].name, &hw_states_positions_[i]));
+        }
+
+        // Multiplexer infos
+        for (uint i=10; i<12; ++i) {
+            state_interfaces.emplace_back(hardware_interface::StateInterface(
+            info_.sensors[1].name, info_.sensors[1].state_interfaces[i-10].name, &hw_states_positions_[i]));
         }
 
         return state_interfaces;
@@ -327,21 +369,24 @@ namespace riptide_hardware {
             }
         }
 
+        // Getting Multiplexer commands commands
+        {
+            std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
+            if (multiplexer_commands_ != nullptr) {
+                std::vector<double> infos = multiplexer_commands_->GetMultiplexerInfos();
+                hw_states_positions_[10] = infos[0];
+                hw_states_positions_[11] = infos[1];
+
+                multiplexer_commands_ = nullptr;
+            }
+        }
+
         return hardware_interface::return_type::OK;
     }
 
     hardware_interface::return_type TailHardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
         // Write hardware commands
-        // std::size_t n = serial_write_actuators_commands();
-
-        // if (n != 9) {
-        //     RCLCPP_FATAL(
-        //         rclcpp::get_logger("TailHardware"),
-        //         "Unable to correctly write actuators commands!"
-        //     );
-        //     return hardware_interface::return_type::ERROR;
-        // }
-
+        /*std::size_t n = */ serial_write_actuators_commands();
         return hardware_interface::return_type::OK;
     }
 } // riptide_hardware

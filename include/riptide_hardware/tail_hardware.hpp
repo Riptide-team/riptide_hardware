@@ -19,6 +19,7 @@
 
 #include "riptide_hardware/actuators_commands.hpp"
 #include "riptide_hardware/rc_commands.hpp"
+#include "riptide_hardware/multiplexer_commands.hpp"
 
 
 namespace riptide_hardware {
@@ -109,6 +110,15 @@ namespace riptide_hardware {
 
             // RTRCR handler
             void RTRCR_handler(const nmea::NMEASentence& n);
+
+            // Multiplexer mutex
+            std::mutex multiplexer_mutex_;
+
+            // Multiplexer Commands
+            std::unique_ptr<MultiplexerCommands<rclcpp::Time>> multiplexer_commands_ = nullptr;
+
+            // RTMPX handler
+            void RTMPX_handler(const nmea::NMEASentence& n);
     };
 } // riptide_hardware
 

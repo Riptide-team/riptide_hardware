@@ -23,35 +23,35 @@
 namespace riptide_hardware {
 
     std::size_t TailHardware::serial_write_actuators_commands() {
-        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"),
-            "Writing %f %f %f %f", hw_commands_positions_[0],
-            hw_commands_positions_[1], hw_commands_positions_[2],
-            hw_commands_positions_[3]
-        );
+        // RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"),
+        //     "Writing %f %f %f %f", hw_commands_positions_[0],
+        //     hw_commands_positions_[1], hw_commands_positions_[2],
+        //     hw_commands_positions_[3]
+        // );
 
-        // Transforming double in [-1, 1] and [-pi/3, pi/3] to uint16_t in [1000, 2000] us
-        std::uint16_t value;
-        std::uint8_t commands[10];
-        for (std::size_t i=0; i<4; ++i) {
-            if (i==0) {
-                value = static_cast<std::uint16_t>(500 * std::clamp(hw_commands_positions_[0], -1., 1.) + 1500);
-            }
-            else {
-                value = static_cast<std::uint16_t>(1500 * std::clamp(double(hw_commands_positions_[i]), -M_PI/3., M_PI/3.) / M_PI + 1500);
-            }
+        // // Transforming double in [-1, 1] and [-pi/3, pi/3] to uint16_t in [1000, 2000] us
+        // std::uint16_t value;
+        // std::uint8_t commands[10];
+        // for (std::size_t i=0; i<4; ++i) {
+        //     if (i==0) {
+        //         value = static_cast<std::uint16_t>(500 * std::clamp(hw_commands_positions_[0], -1., 1.) + 1500);
+        //     }
+        //     else {
+        //         value = static_cast<std::uint16_t>(1500 * std::clamp(double(hw_commands_positions_[i]), -M_PI/3., M_PI/3.) / M_PI + 1500);
+        //     }
 
-            // Correcting endian before sending to Arduino
-            std::reverse(
-                reinterpret_cast<char*>(&value),
-                reinterpret_cast<char*>(&value) + sizeof(value)
-            );
+        //     // Correcting endian before sending to Arduino
+        //     std::reverse(
+        //         reinterpret_cast<char*>(&value),
+        //         reinterpret_cast<char*>(&value) + sizeof(value)
+        //     );
 
-            std::memcpy(commands + 2*i, &value, sizeof(std::uint16_t));
-        }
+        //     std::memcpy(commands + 2*i, &value, sizeof(std::uint16_t));
+        // }
 
-        commands[9] = '\n';
-        std::size_t n = serial_->write(9, commands, write_timeout_);
-        return n;
+        // commands[9] = '\n';
+        // std::size_t n = serial_->write(9, commands, write_timeout_);
+        // return n;
     }
 
     void TailHardware::read_callback(const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t count) {
@@ -108,6 +108,7 @@ namespace riptide_hardware {
         // Store in actuators_commands with time
         auto time = std::chrono::system_clock::now();
         actuators_commands_.SetCommands(time, commands);
+        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Read %d %d %d %d", commands[0], commands[1], commands[2], commands[3]);
     }
 
     CallbackReturn TailHardware::on_init(const hardware_interface::HardwareInfo & info_) {

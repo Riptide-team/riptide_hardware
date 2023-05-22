@@ -55,53 +55,19 @@ namespace riptide_hardware {
     }
 
     void TailHardware::read_callback(const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t count) {
-        // Storage of the received time
-        time_last_received_ = time_read_;
 
-        // Getting data with a mutex lock
-        {
-            std::lock_guard<std::mutex> lock_(m_read_);
-            data_consumable_ = true;
-            if((count == 21) and (read_buffer_[20] == '\n')) {
-                // Correcting endian for incoming values from Arduino
-                for (std::size_t i=0; i<20; ++i) {
-                    std::reverse(
-                        reinterpret_cast<char*>(&read_buffer_[i]),
-                        reinterpret_cast<char*>(&read_buffer_[i]) + sizeof(read_buffer_[i])
-                    );
-                }
-
-                // Getting values
-                for(std::size_t i=0; i < 10; ++i) {
-                    std::uint16_t value = (static_cast<std::uint8_t>(read_buffer_[2*i]) << 8) + static_cast<std::uint8_t>(read_buffer_[2*i+1]);
-                    read_data_[i] = value;
-                }
+        // Adding received data to the nmea parser
+        for (std::size_t i = 0; i < count; i++){
+            try {
+                parser.readByte(read_buffer_[i]);
             }
-            else {
-                if (count <= 0) {
-                    RCLCPP_WARN(
+            catch (nmea::NMEAParseError& e){
+                RCLCPP_WARN(
                         rclcpp::get_logger("TailHardware"),
-                        "Got no data (timeout probably reached)!"
-                    );
-                }
-                else {
-                    RCLCPP_WARN(
-                        rclcpp::get_logger("TailHardware"),
-                        "Bad number of data, the frame was probably not complete!"
-                    );
-                }
+                        "Error while parsing NMEA data (%s)!", (e.what()).c_str()
+                );
             }
         }
-
-        std::stringstream ss;
-        for (unsigned int i=0; i<21; ++i) {
-            ss << std::setw(2) << std::setfill('0') << std::hex << static_cast<std::int8_t>(read_buffer_[i]) << " ";
-        }
-
-        RCLCPP_DEBUG_STREAM(
-            rclcpp::get_logger("TailHardware"),
-            ss.str()
-        );
 
         // Relaunching an async read
         if(!serial_->async_read_until(read_buffer_.size(), (uint8_t*)read_buffer_.c_str(), '\n', std::bind(&TailHardware::read_callback, this, std::placeholders::_1, std::placeholders::_2))) {
@@ -167,6 +133,9 @@ namespace riptide_hardware {
         data_consumable_ = false;
 
         read_data_.resize(10);
+
+        // Adding RTACT handler to the nmea parser
+        parser.setSentenceHandler("RTACT", std::bind(&TailHardware::RTACT_handler, this, std::placeholders::_1));
 
         return hardware_interface::CallbackReturn::SUCCESS;
     }

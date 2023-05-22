@@ -102,12 +102,9 @@ namespace riptide_hardware {
             }
 		}
 
-        // Getting time
-        auto time = std::chrono::system_clock::now();
-
         // Store in actuators_commands with time
         std::scoped_lock<std::mutex> lock(actuators_mutex_);
-        actuators_commands_ = std::make_unique<ActuatorsCommands>(time, commands);
+        actuators_commands_ = std::make_unique<ActuatorsCommands<rclcpp::Time>>(time_read_, commands);
     }
 
     CallbackReturn TailHardware::on_init(const hardware_interface::HardwareInfo & info_) {
@@ -277,8 +274,9 @@ namespace riptide_hardware {
             hw_states_positions_[1] = actuators_commands_->DFinAngle();
             hw_states_positions_[2] = actuators_commands_->PFinAngle();
             hw_states_positions_[3] = actuators_commands_->SFinAngle();
-            RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Read %f %f %f %f", hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
+            // RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Read %f %f %f %f", hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
         }
+        actuators_commands_ = nullptr;
 
         return hardware_interface::return_type::OK;
     }

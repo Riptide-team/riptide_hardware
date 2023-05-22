@@ -10,9 +10,10 @@
 #include <variant>
 
 namespace riptide_hardware{
+    template <class T>
     class ActuatorsCommands {
         public:
-            ActuatorsCommands(const std::chrono::system_clock::time_point time, const std::vector<uint16_t> commands) {
+            ActuatorsCommands(const T time, const std::vector<uint16_t> commands) {
                 time_ = time;
                 thruster_us_ = std::max(std::min(commands[0], (uint16_t)2000), (uint16_t)1000);
                 d_fin_us_ = std::max(std::min(commands[1], (uint16_t)2000), (uint16_t)1000);
@@ -42,7 +43,7 @@ namespace riptide_hardware{
 
         private:
             // Time at last frame
-            std::chrono::system_clock::time_point time_;
+            T time_;
 
             // Thruster PWM us
             uint16_t thruster_us_;

@@ -41,7 +41,7 @@ namespace riptide_hardware {
 
             CallbackReturn on_cleanup(const rclcpp_lifecycle::State & previous_state) override;
 
-            hardware_interface::return_type read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override;
+            hardware_interface::return_type read(const rclcpp::Time & time, const rclcpp::Duration & /*period*/) override;
 
             hardware_interface::return_type write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override;
 
@@ -93,9 +93,9 @@ namespace riptide_hardware {
 
             // Actuators mutex
             std::mutex actuators_mutex_;
-            
+
             // Actuators Commands
-            std::unique_ptr<ActuatorsCommands> actuators_commands_ = nullptr;
+            std::unique_ptr<ActuatorsCommands<rclcpp::Time>> actuators_commands_ = nullptr;
 
             // RTACT Handler
             void RTACT_handler(const nmea::NMEASentence& n);

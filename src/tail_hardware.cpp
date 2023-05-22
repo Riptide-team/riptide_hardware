@@ -52,19 +52,17 @@ namespace riptide_hardware {
         return n;
     }
 
-    void TailHardware::read_callback(const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t count) {
+    void TailHardware::read_callback(const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t /*count*/) {
 
         // Adding received data to the nmea parser
-        for (std::size_t i = 0; i < count; i++){
-            try {
-                parser.readByte(read_buffer_[i]);
-            }
-            catch (nmea::NMEAParseError& e){
-                RCLCPP_DEBUG(
-                        rclcpp::get_logger("TailHardware"),
-                        "Error while parsing NMEA data (%s)!", (e.what()).c_str()
-                );
-            }
+        try {
+            parser.readSentence(read_buffer_);
+        }
+        catch (nmea::NMEAParseError& e){
+            RCLCPP_DEBUG(
+                    rclcpp::get_logger("TailHardware"),
+                    "Error while parsing NMEA data (%s)!", (e.what()).c_str()
+            );
         }
 
         // Relaunching an async read
@@ -245,9 +243,9 @@ namespace riptide_hardware {
         }
 
         // Multiplexer infos
-        for (uint i=10; i<12; ++i) {
+        for (uint i=0; i<2; ++i) {
             state_interfaces.emplace_back(hardware_interface::StateInterface(
-            info_.sensors[1].name, info_.sensors[1].state_interfaces[i-10].name, &hw_states_positions_[i]));
+            info_.sensors[1].name, info_.sensors[1].state_interfaces[i].name, &hw_states_positions_[i+10]));
         }
 
         return state_interfaces;

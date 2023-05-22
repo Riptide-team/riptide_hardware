@@ -18,6 +18,7 @@
 #include <nmeaparse/nmea.h>
 
 #include "riptide_hardware/actuators_commands.hpp"
+#include "riptide_hardware/rc_commands.hpp"
 
 
 namespace riptide_hardware {
@@ -99,6 +100,15 @@ namespace riptide_hardware {
 
             // RTACT Handler
             void RTACT_handler(const nmea::NMEASentence& n);
+
+            // RCR mutex
+            std::mutex rc_mutex_;
+
+            // RCR Commands
+            std::unique_ptr<RCCommands<rclcpp::Time>> rc_commands_ = nullptr;
+
+            // RTRCR handler
+            void RTRCR_handler(const nmea::NMEASentence& n);
     };
 } // riptide_hardware
 

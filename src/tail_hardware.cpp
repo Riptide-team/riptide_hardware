@@ -18,6 +18,7 @@
 #include <nmeaparse/nmea.h>
 
 #include "riptide_hardware/actuators_commands.hpp"
+#include "riptide_hardware/rc_commands.hpp"
 
 
 namespace riptide_hardware {
@@ -75,7 +76,39 @@ namespace riptide_hardware {
         }
     }
 
-    void TailHardware::RTACT_handler(const nmea::NMEASentence& n){
+    void TailHardware::RTACT_handler(const nmea::NMEASentence& n) {
+        // Getting each actuators commands
+        std::vector<uint16_t> commands;
+        for (size_t i = 0; i < n.parameters.size(); ++i){
+            try {
+                commands.push_back(std::stoul(n.parameters[i], nullptr, 10));
+            }
+            catch (const std::invalid_argument& ia) {
+                RCLCPP_DEBUG(
+                    rclcpp::get_logger("TailHardware"),
+                    "RTRCR invalid argument parsing error (%s)", ia.what()
+                );
+            }
+            catch (const std::out_of_range& oor) {
+                RCLCPP_DEBUG(
+                    rclcpp::get_logger("TailHardware"),
+                    "RTRCR out or range parsing error (%s)", oor.what()
+                );
+            }
+            catch (const std::exception& e) {
+                RCLCPP_DEBUG(
+                    rclcpp::get_logger("TailHardware"),
+                    "RTRCR parsing error (%s)", e.what()
+                );
+            }
+		}
+
+        // Store in actuators_commands with time
+        std::scoped_lock<std::mutex> lock(rc_mutex_);
+        rc_commands_ = std::make_unique<RCCommands<rclcpp::Time>>(time_read_, commands);
+    }
+
+    void TailHardware::RTRCR_handler(const nmea::NMEASentence& n) {
         // Getting each actuators commands
         std::vector<uint16_t> commands;
         for (size_t i = 0; i < n.parameters.size(); ++i){
@@ -153,6 +186,9 @@ namespace riptide_hardware {
 
         // Adding RTACT handler to the nmea parser
         parser.setSentenceHandler("RTACT", std::bind(&TailHardware::RTACT_handler, this, std::placeholders::_1));
+
+        // Adding RTRCR handler to the nmea parser
+        parser.setSentenceHandler("RTRCR", std::bind(&TailHardware::RTRCR_handler, this, std::placeholders::_1));
 
         return hardware_interface::CallbackReturn::SUCCESS;
     }
@@ -268,15 +304,28 @@ namespace riptide_hardware {
         time_read_ = time;
 
         // Getting actuators commands
-        std::scoped_lock<std::mutex> lock(actuators_mutex_);
-        if (actuators_commands_ != nullptr) {
-            hw_states_positions_[0] = actuators_commands_->Thruster();
-            hw_states_positions_[1] = actuators_commands_->DFinAngle();
-            hw_states_positions_[2] = actuators_commands_->PFinAngle();
-            hw_states_positions_[3] = actuators_commands_->SFinAngle();
-            // RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Read %f %f %f %f", hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
+        {
+            std::scoped_lock<std::mutex> lock(actuators_mutex_);
+            if (actuators_commands_ != nullptr) {
+                hw_states_positions_[0] = actuators_commands_->Thruster();
+                hw_states_positions_[1] = actuators_commands_->DFinAngle();
+                hw_states_positions_[2] = actuators_commands_->PFinAngle();
+                hw_states_positions_[3] = actuators_commands_->SFinAngle();
+                actuators_commands_ = nullptr;
+            }
         }
-        actuators_commands_ = nullptr;
+
+        // Getting RC commands
+        {
+            std::scoped_lock<std::mutex> lock(rc_mutex_);
+            if (rc_commands_ != nullptr) {
+                std::vector<double> commands = rc_commands_->GetCommands();
+                for (std::size_t i=4; i<hw_states_positions_.size(); ++i) {
+                    hw_states_positions_[i] = commands[i-4];
+                }
+                rc_commands_ = nullptr;
+            }
+        }
 
         return hardware_interface::return_type::OK;
     }

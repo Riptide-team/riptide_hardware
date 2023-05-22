@@ -62,7 +62,7 @@ namespace riptide_hardware {
                 parser.readByte(read_buffer_[i]);
             }
             catch (nmea::NMEAParseError& e){
-                RCLCPP_WARN(
+                RCLCPP_DEBUG(
                         rclcpp::get_logger("TailHardware"),
                         "Error while parsing NMEA data (%s)!", (e.what()).c_str()
                 );
@@ -82,7 +82,27 @@ namespace riptide_hardware {
         // Getting each actuators commands
         std::vector<uint16_t> commands;
         for (size_t i = 0; i < n.parameters.size(); ++i){
-            commands.push_back(std::stoul (n.parameters[i], nullptr, 10));
+            try {
+                commands.push_back(std::stoul(n.parameters[i], nullptr, 10));
+            }
+            catch (const std::invalid_argument& ia) {
+                RCLCPP_WARN(
+                    rclcpp::get_logger("TailHardware"),
+                    "RTACT invalid argument parsing error (%s)", ia.what()
+                );
+            }
+            catch (const std::out_of_range& oor) {
+                RCLCPP_WARN(
+                    rclcpp::get_logger("TailHardware"),
+                    "RTACT out or range parsing error (%s)", oor.what()
+                );
+            }
+            catch (const std::exception& e) {
+                RCLCPP_WARN(
+                    rclcpp::get_logger("TailHardware"),
+                    "RTACT parsing error (%s)", e.what()
+                );
+            }
 		}
 
         // Store in actuators_commands with time

@@ -86,19 +86,19 @@ namespace riptide_hardware {
                 commands.push_back(std::stoul(n.parameters[i], nullptr, 10));
             }
             catch (const std::invalid_argument& ia) {
-                RCLCPP_WARN(
+                RCLCPP_DEBUG(
                     rclcpp::get_logger("TailHardware"),
                     "RTACT invalid argument parsing error (%s)", ia.what()
                 );
             }
             catch (const std::out_of_range& oor) {
-                RCLCPP_WARN(
+                RCLCPP_DEBUG(
                     rclcpp::get_logger("TailHardware"),
                     "RTACT out or range parsing error (%s)", oor.what()
                 );
             }
             catch (const std::exception& e) {
-                RCLCPP_WARN(
+                RCLCPP_DEBUG(
                     rclcpp::get_logger("TailHardware"),
                     "RTACT parsing error (%s)", e.what()
                 );
@@ -270,44 +270,15 @@ namespace riptide_hardware {
     hardware_interface::return_type TailHardware::read(const rclcpp::Time & time, const rclcpp::Duration & /*period*/) {
         time_read_ = time;
 
-        // Check if the received is expired
-        // rclcpp::Duration d = time - time_last_received_;
-        // if (d > duration_expiration_) {
-        //     RCLCPP_FATAL(
-        //         rclcpp::get_logger("TailHardware"),
-        //         "Read states expired!"
-        //     );
-        //     return hardware_interface::return_type::ERROR;
-        // }
+        // Getting actuators commands
+        auto get_commands = actuators_commands_.GetCommands();
 
-        // Copy async recevied states to hw_state_interfaces
-        std::lock_guard<std::mutex> lock_(m_read_);
-        if (data_consumable_) {
-            // Get thruster state
-            hw_states_positions_[0] = std::clamp((static_cast<double>(read_data_[0]) - 1500.) / 500., -1., 1.);
-
-            // Get fin states
-            for (std::size_t i=1; i<4; ++i) {
-                hw_states_positions_[i] = std::clamp(M_PI/3 * (static_cast<double>(read_data_[i]) - 1500.) / 500., -M_PI/3, M_PI/3);
-            }
-
-            // Get RC Receiver state
-            for (std::size_t i=4; i<10; ++i) {
-                hw_states_positions_[i] = std::clamp((static_cast<double>(read_data_[i]) - 1500.) / 500., -1., 1.);
-            }
-
-            // Reset data consumable
-            data_consumable_ = false;
-
-            RCLCPP_INFO(
-                rclcpp::get_logger("TailHardware"),
-                "Reading positions: %f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
-                hw_states_positions_[0], hw_states_positions_[1],
-                hw_states_positions_[2], hw_states_positions_[3],
-                hw_states_positions_[4], hw_states_positions_[5],
-                hw_states_positions_[6], hw_states_positions_[7],
-                hw_states_positions_[8], hw_states_positions_[9]
-            );
+        if (get_commands.first && std::holds_alternative<std::vector<double>>(get_commands.second)) {
+            std::vector<double> commands = std::get<std::vector<double>>(get_commands.second);
+            std::copy(std::cbegin(commands), std::cend(commands), std::begin(hw_states_positions_));
+        }
+        else {
+            // Eventually generate error when get_commands.second exceed a value ...
         }
 
         return hardware_interface::return_type::OK;

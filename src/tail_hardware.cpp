@@ -351,7 +351,7 @@ namespace riptide_hardware {
                 hw_states_positions_[1] = actuators_commands_->DFinAngle();
                 hw_states_positions_[2] = actuators_commands_->PFinAngle();
                 hw_states_positions_[3] = actuators_commands_->SFinAngle();
-                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d", hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
+                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "RTACT %f %f %f %f", hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
                 actuators_commands_ = nullptr;
             }
         }

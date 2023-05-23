@@ -206,18 +206,9 @@ namespace riptide_hardware {
         
         std::size_t state_number = info_.joints.size();
         for (const auto &s : info_.sensors) {
-            RCLCPP_INFO(
-                rclcpp::get_logger("TailHardware"),
-                "Got sensor %s", s.name.c_str()
-            );
             state_number += s.state_interfaces.size();
         }
         hw_states_positions_.resize(state_number, std::numeric_limits<double>::quiet_NaN());
-
-        RCLCPP_INFO(
-            rclcpp::get_logger("TailHardware"),
-            "Commands size %ld, States size %ld", info_.joints.size(), state_number
-        );
 
         RCLCPP_INFO(
             rclcpp::get_logger("TailHardware"),
@@ -229,8 +220,6 @@ namespace riptide_hardware {
         duration_expiration_ = rclcpp::Duration(1, 0); // 1 s, 0 ns
 
         data_consumable_ = false;
-
-        read_data_.resize(10);
 
         // Adding RTACT handler to the nmea parser
         parser.setSentenceHandler("RTACT", std::bind(&TailHardware::RTACT_handler, this, std::placeholders::_1));
@@ -362,8 +351,8 @@ namespace riptide_hardware {
 
         // Getting actuators commands
         {
-            std::scoped_lock<std::mutex> lock(actuators_mutex_);
             if (actuators_commands_ != nullptr) {
+                std::scoped_lock<std::mutex> lock(actuators_mutex_);
                 hw_states_positions_[0] = actuators_commands_->Thruster();
                 hw_states_positions_[1] = actuators_commands_->DFinAngle();
                 hw_states_positions_[2] = actuators_commands_->PFinAngle();
@@ -375,8 +364,8 @@ namespace riptide_hardware {
 
         // Getting RC commands
         {
-            std::scoped_lock<std::mutex> lock(rc_mutex_);
             if (rc_commands_ != nullptr) {
+                std::scoped_lock<std::mutex> lock(rc_mutex_);
                 std::vector<double> commands = rc_commands_->GetCommands();
                 for (std::size_t i=4; i<hw_states_positions_.size(); ++i) {
                     hw_states_positions_[i] = commands[i-4];
@@ -387,8 +376,8 @@ namespace riptide_hardware {
 
         // Getting Multiplexer commands commands
         {
-            std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
             if (multiplexer_commands_ != nullptr) {
+                std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
                 std::vector<double> infos = multiplexer_commands_->GetMultiplexerInfos();
                 hw_states_positions_[10] = infos[0];
                 hw_states_positions_[11] = infos[1];

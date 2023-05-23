@@ -87,9 +87,6 @@ namespace riptide_hardware {
             // Is data consumable
             bool data_consumable_;
 
-            // Data
-            std::vector<uint16_t> read_data_;
-
             // Read callback
             void read_callback(const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t count);
 

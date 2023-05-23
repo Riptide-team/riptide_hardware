@@ -53,19 +53,21 @@ namespace riptide_hardware {
         return n;
     }
 
-    void TailHardware::read_callback(const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t /*count*/) {
+    void TailHardware::read_callback(const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t count) {
 
         RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Read %s", read_buffer_.c_str());
 
         // Adding received data to the nmea parser
-        try {
-            parser.readSentence(read_buffer_);
-        }
-        catch (nmea::NMEAParseError& e){
-            RCLCPP_DEBUG(
-                    rclcpp::get_logger("TailHardware"),
-                    "Error while parsing NMEA data (%s)!", (e.what()).c_str()
-            );
+        for (int i = 0; i < count; ++i){
+            try {
+                parser.readByte(read_buffer_[i]);
+            }
+            catch (nmea::NMEAParseError& e){
+                RCLCPP_DEBUG(
+                        rclcpp::get_logger("TailHardware"),
+                        "Error while parsing NMEA data (%s)!", (e.what()).c_str()
+                );
+            }
         }
 
 

@@ -206,6 +206,10 @@ namespace riptide_hardware {
         
         std::size_t state_number = info_.joints.size();
         for (const auto &s : info_.sensors) {
+            RCLCPP_INFO(
+                rclcpp::get_logger("TailHardware"),
+                "Got sensor %s", s.name.c_str()
+            );
             state_number += s.state_interfaces.size();
         }
         hw_states_positions_.resize(state_number, std::numeric_limits<double>::quiet_NaN());

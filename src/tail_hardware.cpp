@@ -49,16 +49,16 @@ namespace riptide_hardware {
         // Writing frame
         std::string frame = command.toString();
         std::size_t n = serial_->write(frame.size(), reinterpret_cast<const uint8_t*>(frame.c_str()), write_timeout_);
-        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Serial write %s", (command.toString()).c_str());
+        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Serial write %s", (command.toString()).c_str());
         return n;
     }
 
     void TailHardware::read_callback(const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t count) {
 
-        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Read %s", read_buffer_.c_str());
+        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read %s", read_buffer_.c_str());
 
         // Adding received data to the nmea parser
-        for (int i = 0; i < count; ++i){
+        for (std::size_t i = 0; i < count; ++i){
             try {
                 parser.readByte(read_buffer_[i]);
             }
@@ -143,7 +143,7 @@ namespace riptide_hardware {
 		}
 
         // Store in actuators_commands with time
-        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5]);
+        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5]);
         {
             std::scoped_lock<std::mutex> lock(actuators_mutex_);
             actuators_commands_ = std::make_unique<ActuatorsCommands<rclcpp::Time>>(time_read_, commands);
@@ -179,7 +179,7 @@ namespace riptide_hardware {
         }
 
         // Store in multiplexer infos with time
-        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "RTMPX %f %f", able_control, remaining_time);
+        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f", able_control, remaining_time);
         {
             std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
             multiplexer_commands_ = std::make_unique<MultiplexerCommands<rclcpp::Time>>(time_read_, able_control, remaining_time);
@@ -212,7 +212,7 @@ namespace riptide_hardware {
         port_ = info_.hardware_parameters.at("port");
         baud_rate_ = stoi(info_.hardware_parameters.at("baud_rate"));
         
-        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "port: %s - baud rate: %d", port_.c_str(), baud_rate_);
+        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "port: %s - baud rate: %d", port_.c_str(), baud_rate_);
 
         hw_commands_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
         
@@ -222,7 +222,7 @@ namespace riptide_hardware {
         }
         hw_states_positions_.resize(state_number, std::numeric_limits<double>::quiet_NaN());
 
-        RCLCPP_INFO(
+        RCLCPP_DEBUG(
             rclcpp::get_logger("TailHardware"),
             "Serial communication: %s:%i", port_.c_str(), baud_rate_
         );
@@ -333,7 +333,7 @@ namespace riptide_hardware {
     }
 
     CallbackReturn TailHardware::on_deactivate(const rclcpp_lifecycle::State & /*previous_state*/) {
-        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Deactivating ...please wait...");
+        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Deactivating ...please wait...");
 
         // Sending neutral command
         for (unsigned int i=0; i<hw_commands_positions_.size(); ++i) {
@@ -341,12 +341,12 @@ namespace riptide_hardware {
         }
         serial_write_actuators_commands();
 
-        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Successfully deactivated!");
+        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Successfully deactivated!");
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 
     CallbackReturn TailHardware::on_cleanup(const rclcpp_lifecycle::State & /*previous_state*/) {
-        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Cleanup ...please wait...");
+        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Cleanup ...please wait...");
 
         // Sending neutral command
         for (unsigned int i=0; i<hw_commands_positions_.size(); ++i) {
@@ -354,7 +354,7 @@ namespace riptide_hardware {
         }
         serial_write_actuators_commands();
 
-        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Successfully cleanup!");
+        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Successfully cleanup!");
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 
@@ -369,7 +369,7 @@ namespace riptide_hardware {
                 hw_states_positions_[1] = actuators_commands_->DFinAngle();
                 hw_states_positions_[2] = actuators_commands_->PFinAngle();
                 hw_states_positions_[3] = actuators_commands_->SFinAngle();
-                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Ros2Control RTACT %f %f %f %f", hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Ros2Control RTACT %f %f %f %f", hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
                 actuators_commands_ = nullptr;
             }
         }
@@ -382,7 +382,7 @@ namespace riptide_hardware {
                 for (std::size_t i=4; i<hw_states_positions_.size(); ++i) {
                     hw_states_positions_[i] = commands[i-4];
                 }
-                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Ros2Control RTRCR %f %f %f %f %f %f", hw_states_positions_[4], hw_states_positions_[5], hw_states_positions_[6], hw_states_positions_[7], hw_states_positions_[8], hw_states_positions_[9]);
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Ros2Control RTRCR %f %f %f %f %f %f", hw_states_positions_[4], hw_states_positions_[5], hw_states_positions_[6], hw_states_positions_[7], hw_states_positions_[8], hw_states_positions_[9]);
                 rc_commands_ = nullptr;
             }
         }
@@ -395,7 +395,7 @@ namespace riptide_hardware {
                 std::vector<double> infos = multiplexer_commands_->GetMultiplexerInfos();
                 hw_states_positions_[10] = infos[0];
                 hw_states_positions_[11] = infos[1];
-                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Ros2Control RTMPX %f %f", hw_states_positions_[10], hw_states_positions_[11]);
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Ros2Control RTMPX %f %f", hw_states_positions_[10], hw_states_positions_[11]);
                 multiplexer_commands_ = nullptr;
             }
         }

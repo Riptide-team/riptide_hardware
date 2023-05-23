@@ -102,11 +102,11 @@ namespace riptide_hardware {
 		}
 
         // Store in actuators_commands with time
-        std::scoped_lock<std::mutex> lock(rc_mutex_);
-        rc_commands_ = std::make_unique<RCCommands<rclcpp::Time>>(time_read_, commands);
-
         RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d", commands[0], commands[1], commands[2], commands[3]);
-
+        {
+            std::scoped_lock<std::mutex> lock(rc_mutex_);
+            rc_commands_ = std::make_unique<RCCommands<rclcpp::Time>>(time_read_, commands);
+        }
     }
 
     void TailHardware::RTRCR_handler(const nmea::NMEASentence& n) {
@@ -137,8 +137,11 @@ namespace riptide_hardware {
 		}
 
         // Store in actuators_commands with time
-        std::scoped_lock<std::mutex> lock(actuators_mutex_);
-        actuators_commands_ = std::make_unique<ActuatorsCommands<rclcpp::Time>>(time_read_, commands);
+        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5]);
+        {
+            std::scoped_lock<std::mutex> lock(actuators_mutex_);
+            actuators_commands_ = std::make_unique<ActuatorsCommands<rclcpp::Time>>(time_read_, commands);
+        }
     }
 
     void TailHardware::RTMPX_handler(const nmea::NMEASentence& n) {
@@ -170,8 +173,11 @@ namespace riptide_hardware {
         }
 
         // Store in multiplexer infos with time
-        std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
-        multiplexer_commands_ = std::make_unique<MultiplexerCommands<rclcpp::Time>>(time_read_, able_control, remaining_time);
+        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "RTMPX %f %f", able_control, remaining_time);
+        {
+            std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
+            multiplexer_commands_ = std::make_unique<MultiplexerCommands<rclcpp::Time>>(time_read_, able_control, remaining_time);
+        }
     }
 
     CallbackReturn TailHardware::on_init(const hardware_interface::HardwareInfo & info_) {

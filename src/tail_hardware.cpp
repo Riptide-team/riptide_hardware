@@ -168,34 +168,36 @@ namespace riptide_hardware {
         double able_control;
         double remaining_time;
 
-        try {
-            able_control = std::stod(n.parameters[0]);
-            remaining_time = std::stod(n.parameters[1]);
-        }
-        catch (const std::invalid_argument& ia) {
-            RCLCPP_DEBUG(
-                rclcpp::get_logger("TailHardware"),
-                "RTMPX invalid argument parsing error (%s)", ia.what()
-            );
-        }
-        catch (const std::out_of_range& oor) {
-            RCLCPP_DEBUG(
-                rclcpp::get_logger("TailHardware"),
-                "RTMPX out or range parsing error (%s)", oor.what()
-            );
-        }
-        catch (const std::exception& e) {
-            RCLCPP_DEBUG(
-                rclcpp::get_logger("TailHardware"),
-                "RTMPX parsing error (%s)", e.what()
-            );
-        }
+        if (n.parameters.size() == 2) {
+            try {
+                able_control = std::stod(n.parameters[0]);
+                remaining_time = std::stod(n.parameters[1]);
+            }
+            catch (const std::invalid_argument& ia) {
+                RCLCPP_DEBUG(
+                    rclcpp::get_logger("TailHardware"),
+                    "RTMPX invalid argument parsing error (%s)", ia.what()
+                );
+            }
+            catch (const std::out_of_range& oor) {
+                RCLCPP_DEBUG(
+                    rclcpp::get_logger("TailHardware"),
+                    "RTMPX out or range parsing error (%s)", oor.what()
+                );
+            }
+            catch (const std::exception& e) {
+                RCLCPP_DEBUG(
+                    rclcpp::get_logger("TailHardware"),
+                    "RTMPX parsing error (%s)", e.what()
+                );
+            }
 
-        // Store in multiplexer infos with time
-        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f", able_control, remaining_time);
-        {
-            std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
-            multiplexer_commands_ = std::make_unique<MultiplexerCommands<rclcpp::Time>>(time_read_, able_control, remaining_time);
+            // Store in multiplexer infos with time
+            RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f", able_control, remaining_time);
+            {
+                std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
+                multiplexer_commands_ = std::make_unique<MultiplexerCommands<rclcpp::Time>>(time_read_, able_control, remaining_time);
+            }
         }
     }
 

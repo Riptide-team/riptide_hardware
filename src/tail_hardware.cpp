@@ -63,15 +63,6 @@ namespace riptide_hardware {
         for (std::size_t i = 0; i < count; ++i){
             try {
                 parser.readByte(read_buffer_[i]);
-                if (read_buffer_[i] == '\n') {
-                    std::cout << '[LF]';
-                }
-                else if (read_buffer_[i] == '\r') {
-                    std::cout << '[CR]';
-                }
-                else {
-                    std::cout << read_buffer_[i];
-                }
             }
             catch (nmea::NMEAParseError& e){
                 RCLCPP_DEBUG(
@@ -80,7 +71,6 @@ namespace riptide_hardware {
                 );
             }
         }
-        std::cout << std::endl;
 
         read_buffer_ = std::string(1024, '\0');
         // Relaunching an async read

@@ -104,7 +104,7 @@ namespace riptide_hardware {
         driver_->setFluidDensity(fluid_density_);
         
         // Setting calibration pressure
-        driver_->setCalibrationPressure(calibration_pressure_/1000.);
+        driver_->setCalibrationPressure(calibration_pressure_/100.);
 
         // Set joint state
         for (uint8_t i = 0; i < info_.sensors[0].state_interfaces.size(); ++i) {

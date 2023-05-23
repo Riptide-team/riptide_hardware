@@ -404,6 +404,10 @@ namespace riptide_hardware {
             }
         }
 
+        std::stringstream ss;
+        std::copy(std::cbegin(hw_states_positions_), std::cend(hw_states_positions_), std::ostream_iterator<double>(ss, " "));
+        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "%s", (ss.str()).c_str());
+
         return hardware_interface::return_type::OK;
     }
 

@@ -203,7 +203,12 @@ namespace riptide_hardware {
         RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "port: %s - baud rate: %d", port_.c_str(), baud_rate_);
 
         hw_commands_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
-        hw_states_positions_.resize(info_.joints.size()+info_.sensors.size(), std::numeric_limits<double>::quiet_NaN());
+        
+        std::size_t state_number = info_.joints.size();
+        for (const auto &s : info_.sensors) {
+            state_number += s.state_interfaces.size();
+        }
+        hw_states_positions_.resize(state_number, std::numeric_limits<double>::quiet_NaN());
 
         RCLCPP_INFO(
             rclcpp::get_logger("TailHardware"),

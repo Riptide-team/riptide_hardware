@@ -83,81 +83,88 @@ namespace riptide_hardware {
     }
 
     void TailHardware::RTACT_handler(const nmea::NMEASentence& n) {
-        // Getting each actuators commands
-        std::vector<uint16_t> commands;
-        for (size_t i = 0; i < n.parameters.size(); ++i){
-            try {
-                commands.push_back(std::stoul(n.parameters[i], nullptr, 10));
+        // Only process frame if the frame contains 4 arguments
+        if (n.parameters.size() == 4) {
+            // Getting each actuators commands
+            std::vector<uint16_t> commands;
+            for (size_t i = 0; i < n.parameters.size(); ++i){
+                try {
+                    commands.push_back(std::stoul(n.parameters[i], nullptr, 10));
+                }
+                catch (const std::invalid_argument& ia) {
+                    RCLCPP_DEBUG(
+                        rclcpp::get_logger("TailHardware"),
+                        "RTRCR invalid argument parsing error (%s)", ia.what()
+                    );
+                }
+                catch (const std::out_of_range& oor) {
+                    RCLCPP_DEBUG(
+                        rclcpp::get_logger("TailHardware"),
+                        "RTRCR out or range parsing error (%s)", oor.what()
+                    );
+                }
+                catch (const std::exception& e) {
+                    RCLCPP_DEBUG(
+                        rclcpp::get_logger("TailHardware"),
+                        "RTRCR parsing error (%s)", e.what()
+                    );
+                }
             }
-            catch (const std::invalid_argument& ia) {
-                RCLCPP_DEBUG(
-                    rclcpp::get_logger("TailHardware"),
-                    "RTRCR invalid argument parsing error (%s)", ia.what()
-                );
-            }
-            catch (const std::out_of_range& oor) {
-                RCLCPP_DEBUG(
-                    rclcpp::get_logger("TailHardware"),
-                    "RTRCR out or range parsing error (%s)", oor.what()
-                );
-            }
-            catch (const std::exception& e) {
-                RCLCPP_DEBUG(
-                    rclcpp::get_logger("TailHardware"),
-                    "RTRCR parsing error (%s)", e.what()
-                );
-            }
-		}
 
-        // Store in actuators_commands with time
-        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d", commands[0], commands[1], commands[2], commands[3]);
-        {
-            std::scoped_lock<std::mutex> lock(rc_mutex_);
-            actuators_commands_ = std::make_unique<ActuatorsCommands<rclcpp::Time>>(time_read_, commands);
+            // Store in actuators_commands with time
+            RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d", commands[0], commands[1], commands[2], commands[3]);
+            {
+                std::scoped_lock<std::mutex> lock(rc_mutex_);
+                actuators_commands_ = std::make_unique<ActuatorsCommands<rclcpp::Time>>(time_read_, commands);
+            }
         }
     }
 
     void TailHardware::RTRCR_handler(const nmea::NMEASentence& n) {
-        // Getting each actuators commands
-        std::vector<uint16_t> commands;
-        for (size_t i = 0; i < n.parameters.size(); ++i){
-            try {
-                commands.push_back(std::stoul(n.parameters[i], nullptr, 10));
+        // Only process frame if the frame contains 6 arguments
+        if (n.parameters.size() == 6) {
+            // Getting each actuators commands
+            std::vector<uint16_t> commands;
+            for (size_t i = 0; i < n.parameters.size(); ++i){
+                try {
+                    commands.push_back(std::stoul(n.parameters[i], nullptr, 10));
+                }
+                catch (const std::invalid_argument& ia) {
+                    RCLCPP_DEBUG(
+                        rclcpp::get_logger("TailHardware"),
+                        "RTACT invalid argument parsing error (%s)", ia.what()
+                    );
+                }
+                catch (const std::out_of_range& oor) {
+                    RCLCPP_DEBUG(
+                        rclcpp::get_logger("TailHardware"),
+                        "RTACT out or range parsing error (%s)", oor.what()
+                    );
+                }
+                catch (const std::exception& e) {
+                    RCLCPP_DEBUG(
+                        rclcpp::get_logger("TailHardware"),
+                        "RTACT parsing error (%s)", e.what()
+                    );
+                }
             }
-            catch (const std::invalid_argument& ia) {
-                RCLCPP_DEBUG(
-                    rclcpp::get_logger("TailHardware"),
-                    "RTACT invalid argument parsing error (%s)", ia.what()
-                );
-            }
-            catch (const std::out_of_range& oor) {
-                RCLCPP_DEBUG(
-                    rclcpp::get_logger("TailHardware"),
-                    "RTACT out or range parsing error (%s)", oor.what()
-                );
-            }
-            catch (const std::exception& e) {
-                RCLCPP_DEBUG(
-                    rclcpp::get_logger("TailHardware"),
-                    "RTACT parsing error (%s)", e.what()
-                );
-            }
-		}
 
-        // Store in actuators_commands with time
-        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5]);
-        {
-            std::scoped_lock<std::mutex> lock(actuators_mutex_);
-            rc_commands_ = std::make_unique<RCCommands<rclcpp::Time>>(time_read_, commands);
+            // Store in actuators_commands with time
+            RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5]);
+            {
+                std::scoped_lock<std::mutex> lock(actuators_mutex_);
+                rc_commands_ = std::make_unique<RCCommands<rclcpp::Time>>(time_read_, commands);
+            }
         }
     }
 
     void TailHardware::RTMPX_handler(const nmea::NMEASentence& n) {
-        // Getting multiplexer infos
-        double able_control;
-        double remaining_time;
-
+        // Only process the frame if there is 2 arguments
         if (n.parameters.size() == 2) {
+            // Getting multiplexer infos
+            double able_control;
+            double remaining_time;
+
             try {
                 able_control = std::stod(n.parameters[0]);
                 remaining_time = std::stod(n.parameters[1]);

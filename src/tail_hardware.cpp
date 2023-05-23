@@ -54,6 +54,8 @@ namespace riptide_hardware {
 
     void TailHardware::read_callback(const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t /*count*/) {
 
+        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Read %s", read_buffer_);
+
         // Adding received data to the nmea parser
         try {
             parser.readSentence(read_buffer_);
@@ -64,6 +66,7 @@ namespace riptide_hardware {
                     "Error while parsing NMEA data (%s)!", (e.what()).c_str()
             );
         }
+
 
         // Relaunching an async read
         if(!serial_->async_read_until(read_buffer_.size(), (uint8_t*)read_buffer_.c_str(), '\n', std::bind(&TailHardware::read_callback, this, std::placeholders::_1, std::placeholders::_2))) {
@@ -363,7 +366,7 @@ namespace riptide_hardware {
                 hw_states_positions_[1] = actuators_commands_->DFinAngle();
                 hw_states_positions_[2] = actuators_commands_->PFinAngle();
                 hw_states_positions_[3] = actuators_commands_->SFinAngle();
-                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "RTACT %f %f %f %f", hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
+                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Ros2Control RTACT %f %f %f %f", hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
                 actuators_commands_ = nullptr;
             }
         }
@@ -376,9 +379,11 @@ namespace riptide_hardware {
                 for (std::size_t i=4; i<hw_states_positions_.size(); ++i) {
                     hw_states_positions_[i] = commands[i-4];
                 }
+                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Ros2Control RTRCR %f %f %f %f %f %f", hw_states_positions_[4], hw_states_positions_[5], hw_states_positions_[6], hw_states_positions_[7], hw_states_positions_[8], hw_states_positions_[9]);
                 rc_commands_ = nullptr;
             }
         }
+
 
         // Getting Multiplexer commands commands
         {
@@ -387,7 +392,7 @@ namespace riptide_hardware {
                 std::vector<double> infos = multiplexer_commands_->GetMultiplexerInfos();
                 hw_states_positions_[10] = infos[0];
                 hw_states_positions_[11] = infos[1];
-
+                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Ros2Control RTMPX %f %f", hw_states_positions_[10], hw_states_positions_[11]);
                 multiplexer_commands_ = nullptr;
             }
         }

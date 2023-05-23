@@ -19,22 +19,22 @@ namespace riptide_hardware{
 
             // Thruster command getters 
             double Thruster() const {
-                return ((double)thruster_us_ - 1500.) / 500.;
+                return (static_cast<double>(thruster_us_) - 1500.) / 500.;
             };
             
             // D Fin command getter
             double DFinAngle() const {
-                return M_PI * ((double)d_fin_us_ - 1500.) / 2000.;
+                return M_PI * (static_cast<double>(d_fin_us_) - 1500.) / 2000.;
             };
 
             // P Fin command getter
             double PFinAngle() const {
-                return M_PI * ((double)p_fin_us_ - 1500.) / 2000.;
+                return M_PI * (static_cast<double>(p_fin_us_) - 1500.) / 2000.;
             };
 
             // S Fin command getter
             double SFinAngle() const {
-                return M_PI * ((double)s_fin_us_ - 1500.) / 2000.;
+                return M_PI * (static_cast<double>(s_fin_us_) - 1500.) / 2000.;
             };
 
         private:

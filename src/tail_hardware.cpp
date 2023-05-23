@@ -156,8 +156,8 @@ namespace riptide_hardware {
         double remaining_time;
 
         try {
-            able_control = std::stof(n.parameters[0]);
-            remaining_time = std::stof(n.parameters[1]);
+            able_control = std::stod(n.parameters[0]);
+            remaining_time = std::stod(n.parameters[1]);
         }
         catch (const std::invalid_argument& ia) {
             RCLCPP_DEBUG(

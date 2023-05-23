@@ -113,7 +113,7 @@ namespace riptide_hardware {
         RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d", commands[0], commands[1], commands[2], commands[3]);
         {
             std::scoped_lock<std::mutex> lock(rc_mutex_);
-            rc_commands_ = std::make_unique<RCCommands<rclcpp::Time>>(time_read_, commands);
+            actuators_commands_ = std::make_unique<ActuatorsCommands<rclcpp::Time>>(time_read_, commands);
         }
     }
 
@@ -148,7 +148,7 @@ namespace riptide_hardware {
         RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5]);
         {
             std::scoped_lock<std::mutex> lock(actuators_mutex_);
-            actuators_commands_ = std::make_unique<ActuatorsCommands<rclcpp::Time>>(time_read_, commands);
+            rc_commands_ = std::make_unique<RCCommands<rclcpp::Time>>(time_read_, commands);
         }
     }
 

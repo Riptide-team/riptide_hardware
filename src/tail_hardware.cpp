@@ -70,7 +70,7 @@ namespace riptide_hardware {
             }
         }
 
-
+        read_buffer_ = std::string(1024, '\0');
         // Relaunching an async read
         if(!serial_->async_read_until(read_buffer_.size(), (uint8_t*)read_buffer_.c_str(), '\n', std::bind(&TailHardware::read_callback, this, std::placeholders::_1, std::placeholders::_2))) {
             RCLCPP_FATAL(

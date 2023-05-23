@@ -57,7 +57,7 @@ namespace riptide_hardware {
 
         RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Read %s", read_buffer_.c_str());
         if (err) {
-           RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "%s", (e.what()).c_str());
+           RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "ERROR");
         }
 
         // Adding received data to the nmea parser

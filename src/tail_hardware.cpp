@@ -292,6 +292,7 @@ namespace riptide_hardware {
         // Trying to instanciate the driver
         try {
             serial_ = rtac::asio::Stream::CreateSerial(port_, baud_rate_);
+            serial_->enable_io_dump("/home/riptide/rtac_asio_logs/rx", "/home/riptide/rtac_asio_logs/tx");
             RCLCPP_INFO(
                 rclcpp::get_logger("TailHardware"),
                 "Driver sucessfully created!"
@@ -405,7 +406,7 @@ namespace riptide_hardware {
         }
 
         std::stringstream ss;
-        std::copy(std::cbegin(hw_states_positions_), std::cend(hw_states_positions_), std::ostream_iterator<double>(ss, " "));
+        std::copy(std::cbegin(hw_states_positions_), std::cend(hw_states_positions_), std::ostream_iterator<double>(ss, "\t"));
         RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "%s", (ss.str()).c_str());
 
         return hardware_interface::return_type::OK;

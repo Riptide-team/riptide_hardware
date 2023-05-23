@@ -207,6 +207,11 @@ namespace riptide_hardware {
 
         RCLCPP_INFO(
             rclcpp::get_logger("TailHardware"),
+            "Commands size %d, States size %d", info_.joints.size(), info_.joints.size()+info_.sensors.size()
+        );
+
+        RCLCPP_INFO(
+            rclcpp::get_logger("TailHardware"),
             "Serial communication: %s:%i", port_.c_str(), baud_rate_
         );
 

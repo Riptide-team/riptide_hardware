@@ -20,7 +20,7 @@ namespace riptide_hardware{
 
             std::vector<double> GetCommands() const {
                 std::vector<double> commands;
-                std::transform(std::begin(commands_), std::end(commands_), std::back_inserter(commands), [](uint16_t v){ return static_cast<double>((v - 1500) / 500); });
+                std::transform(std::begin(commands_), std::end(commands_), std::back_inserter(commands), [](uint16_t v){ return (static_cast<double>(v) - 1500.) / 500.; });
                 return commands;
             };
 

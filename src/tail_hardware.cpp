@@ -374,7 +374,7 @@ namespace riptide_hardware {
                 hw_states_positions_[1] = actuators_commands_->DFinAngle();
                 hw_states_positions_[2] = actuators_commands_->PFinAngle();
                 hw_states_positions_[3] = actuators_commands_->SFinAngle();
-                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Ros2Control RTACT %f %f %f %f", hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Ros2Control RTACT %f %f %f %f", hw_states_positions_[0], hw_states_positions_[1], hw_states_positions_[2], hw_states_positions_[3]);
                 actuators_commands_ = nullptr;
             }
         }
@@ -387,7 +387,7 @@ namespace riptide_hardware {
                 for (std::size_t i=4; i<hw_states_positions_.size(); ++i) {
                     hw_states_positions_[i] = commands[i-4];
                 }
-                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Ros2Control RTRCR %f %f %f %f %f %f", hw_states_positions_[4], hw_states_positions_[5], hw_states_positions_[6], hw_states_positions_[7], hw_states_positions_[8], hw_states_positions_[9]);
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Ros2Control RTRCR %f %f %f %f %f %f", hw_states_positions_[4], hw_states_positions_[5], hw_states_positions_[6], hw_states_positions_[7], hw_states_positions_[8], hw_states_positions_[9]);
                 rc_commands_ = nullptr;
             }
         }
@@ -400,14 +400,14 @@ namespace riptide_hardware {
                 std::vector<double> infos = multiplexer_commands_->GetMultiplexerInfos();
                 hw_states_positions_[10] = infos[0];
                 hw_states_positions_[11] = infos[1];
-                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Ros2Control RTMPX %f %f", hw_states_positions_[10], hw_states_positions_[11]);
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Ros2Control RTMPX %f %f", hw_states_positions_[10], hw_states_positions_[11]);
                 multiplexer_commands_ = nullptr;
             }
         }
 
         std::stringstream ss;
         std::copy(std::cbegin(hw_states_positions_), std::cend(hw_states_positions_), std::ostream_iterator<double>(ss, "\t"));
-        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "%s", (ss.str()).c_str());
+        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "%s", (ss.str()).c_str());
 
         return hardware_interface::return_type::OK;
     }

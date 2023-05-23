@@ -55,7 +55,7 @@ namespace riptide_hardware {
 
     void TailHardware::read_callback(const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t count) {
 
-        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read %s", read_buffer_.c_str());
+        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Read %s", read_buffer_.c_str());
 
         // Adding received data to the nmea parser
         for (std::size_t i = 0; i < count; ++i){

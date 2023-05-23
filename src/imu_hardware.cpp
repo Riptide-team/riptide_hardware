@@ -137,20 +137,20 @@ namespace riptide_hardware {
 
         std::copy(g.begin(), g.end(), hw_sensor_states_.begin()+3);
 
-        // // Magentometer
-        // std::vector<float> m;
-        // try {
-        //     m = driver_->read_magnetometer();
-        // }
-        // catch(boost::system::system_error& e) {
-        //     RCLCPP_FATAL(
-        //         rclcpp::get_logger("IMUHardware"),
-        //         "Serial error: '%s'", e.what()
-        //     );
-        //     return hardware_interface::return_type::ERROR;
-        // }
+        // Magnetometer
+        std::vector<float> m;
+        try {
+            m = driver_->read_magnetometer();
+        }
+        catch(boost::system::system_error& e) {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("IMUHardware"),
+                "Serial error: '%s'", e.what()
+            );
+            return hardware_interface::return_type::ERROR;
+        }
 
-        // std::copy(m.begin(), m.end(), hw_sensor_states_.begin()+6);
+        std::copy(m.begin(), m.end(), hw_sensor_states_.begin()+6);
 
         // Debug
         std::stringstream ss;

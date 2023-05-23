@@ -65,10 +65,10 @@ namespace riptide_hardware {
             try {
                 parser.readByte(read_buffer_[i]);
                 if (read_buffer_[i] == '\n') {
-                    std::cout << '\n';
+                    std::cout << '[LF]';
                 }
                 else if (read_buffer_[i] == '\r') {
-                    std::cout << '\r';
+                    std::cout << '[CR]';
                 }
                 else {
                     std::cout << read_buffer_[i];

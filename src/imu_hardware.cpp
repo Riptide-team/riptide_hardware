@@ -137,6 +137,21 @@ namespace riptide_hardware {
 
         std::copy(g.begin(), g.end(), hw_sensor_states_.begin()+3);
 
+        // Quaternion
+        std::vector<float> q;
+        try {
+            q = driver_->read_quaternion();
+        }
+        catch(boost::system::system_error& e) {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("IMUHardware"),
+                "Serial error: '%s'", e.what()
+            );
+            return hardware_interface::return_type::ERROR;
+        }
+
+        std::copy(q.begin(), q.end(), hw_sensor_states_.begin()+6);
+
         // Magnetometer
         std::vector<float> m;
         try {
@@ -150,7 +165,7 @@ namespace riptide_hardware {
             return hardware_interface::return_type::ERROR;
         }
 
-        std::copy(m.begin(), m.end(), hw_sensor_states_.begin()+6);
+        std::copy(m.begin(), m.end(), hw_sensor_states_.begin()+10);
 
         // Debug
         std::stringstream ss;

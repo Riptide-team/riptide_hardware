@@ -36,7 +36,7 @@ namespace riptide_hardware {
                 values.push_back(static_cast<std::uint16_t>(500 * std::clamp(hw_commands_positions_[0], -1., 1.) + 1500));
             }
             else {
-                values.push_back(static_cast<std::uint16_t>(4000. / M_PI * std::clamp(hw_commands_positions_[i], -M_PI/4., M_PI/4.) + 1500));
+                values.push_back(static_cast<std::uint16_t>(2000. / M_PI * std::clamp(hw_commands_positions_[i], -M_PI/4., M_PI/4.) + 1500));
             }
         }
 

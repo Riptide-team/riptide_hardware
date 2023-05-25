@@ -176,7 +176,7 @@ namespace riptide_hardware {
         quat = Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX()) * quat * Eigen::AngleAxisd(-M_PI, Eigen::Vector3d::UnitX());
 
         double yaw, pitch, roll;
-        quaternion2euler(q.w(), q.x(), q.y(), q.z(), &roll, &pitch, &yaw);
+        quaternion2euler(quat.w(), quat.x(), quat.y(), quat.z(), &roll, &pitch, &yaw);
 
         std::cout << "yaw: \t"  << yaw * 180. / M_PI << std::endl;
         std::cout << "pitch: \t" << pitch * 180. / M_PI <<  std::endl;

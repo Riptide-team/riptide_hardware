@@ -8,6 +8,8 @@
 
 #include "sparton_ahrs_m1_driver/sparton_ahrs_m1_driver.hpp"
 
+#include <eigen3/Eigen/Dense>
+
 #include <algorithm>
 #include <memory>
 
@@ -150,7 +152,17 @@ namespace riptide_hardware {
             return hardware_interface::return_type::ERROR;
         }
 
-        std::copy(q.begin(), q.end(), hw_sensor_states_.begin()+6);
+        Eigen::Quaterniond q;
+        q.w() = q[0];
+        q.x() = q[1];
+        q.y() = q[2];
+        q.z() = q[3];
+        q = Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX()) * q * Eigen::AngleAxisd(-M_PI, Eigen::Vector3d::UnitX());
+
+        hw_sensor_states_[6] = q.x();
+        hw_sensor_states_[7] = q.y();
+        hw_sensor_states_[8] = q.z();
+        hw_sensor_states_[9] = q.w();
 
         // Magnetometer
         std::vector<float> m;

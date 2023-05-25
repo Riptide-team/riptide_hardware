@@ -49,7 +49,7 @@ namespace riptide_hardware {
         // Writing frame
         std::string frame = command.toString();
         std::size_t n = serial_->write(frame.size(), reinterpret_cast<const uint8_t*>(frame.c_str()), write_timeout_);
-        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Serial write %s", (command.toString()).c_str());
+        RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Serial write %s", (command.toString()).c_str());
         return n;
     }
 

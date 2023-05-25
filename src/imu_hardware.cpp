@@ -16,6 +16,22 @@
 
 namespace riptide_hardware {
 
+    inline double sqr(double x)
+    {
+        return x*x;
+    }
+
+    #ifndef constrain
+    #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+    #endif // !constrain
+
+    inline void quaternion2euler(double qw, double qx, double qy, double qz, double* pRoll, double* pPitch, double* pYaw)
+    {
+        *pRoll = atan2(2*qy*qz+2*qw*qx, 2*sqr(qw)+2*sqr(qz)-1);
+        *pPitch = -asin(constrain(2*qx*qz-2*qw*qy, -1, 1)); // Attempt to avoid potential NAN...
+        *pYaw = atan2(2*qx*qy+2*qw*qz, 2*sqr(qw)+2*sqr(qx)-1);
+    }
+
     CallbackReturn IMUHardware::on_init(const hardware_interface::HardwareInfo & info) {
         if (hardware_interface::SensorInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS) {
             return hardware_interface::CallbackReturn::ERROR;
@@ -158,6 +174,14 @@ namespace riptide_hardware {
         quat.y() = q[2];
         quat.z() = q[3];
         quat = Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX()) * quat * Eigen::AngleAxisd(-M_PI, Eigen::Vector3d::UnitX());
+
+        double yaw, pitch, roll;
+        quaternion2euler(q.w(), q.x(), q.y(), q.z(), &roll, &pitch, &yaw);
+
+        std::cout << "yaw: \t"  << yaw * 180. / M_PI << std::endl;
+        std::cout << "pitch: \t" << pitch * 180. / M_PI <<  std::endl;
+        std::cout << "roll: \t"  << roll * 180. / M_PI <<  std::endl;
+        std::cout << std::endl;
 
         hw_sensor_states_[6] = quat.w();
         hw_sensor_states_[7] = quat.x();

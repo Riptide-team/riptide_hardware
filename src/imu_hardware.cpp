@@ -159,15 +159,15 @@ namespace riptide_hardware {
         quat.z() = q[3];
         quat = Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX()) * quat * Eigen::AngleAxisd(-M_PI, Eigen::Vector3d::UnitX());
 
-        hw_sensor_states_[6] = 10;
-        hw_sensor_states_[7] = 20;
-        hw_sensor_states_[8] = 30;
-        hw_sensor_states_[9] = 40;
+        // hw_sensor_states_[6] = 10;
+        // hw_sensor_states_[7] = 20;
+        // hw_sensor_states_[8] = 30;
+        // hw_sensor_states_[9] = 40;
 
-        // hw_sensor_states_[6] = quat.w();
-        // hw_sensor_states_[7] = quat.x();
-        // hw_sensor_states_[8] = quat.y();
-        // hw_sensor_states_[9] = quat.z();
+        hw_sensor_states_[6] = quat.w();
+        hw_sensor_states_[7] = quat.x();
+        hw_sensor_states_[8] = quat.y();
+        hw_sensor_states_[9] = quat.z();
 
         // Magnetometer
         std::vector<float> m;

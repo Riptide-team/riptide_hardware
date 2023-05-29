@@ -17,19 +17,21 @@
 
 #include <nmeaparse/nmea.h>
 
-#include "riptide_hardware/actuators_commands.hpp"
-#include "riptide_hardware/rc_commands.hpp"
-#include "riptide_hardware/multiplexer_commands.hpp"
-
 
 namespace riptide_hardware {
+
+    struct JointParameters {
+        double min;
+        double max;
+        uint16_t pwm_neutral;
+    };
 
     using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
     class TailHardware : public hardware_interface::SystemInterface {
 
         public:
-            TailHardware() : duration_expiration_(rclcpp::Duration(1, 0)) {};
+            TailHardware() : expiration_duration_(std::chrono::milliseconds(500)) {};
 
             CallbackReturn on_init(const hardware_interface::HardwareInfo & info_) override;
 
@@ -48,75 +50,105 @@ namespace riptide_hardware {
             hardware_interface::return_type write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) override;
 
         private:
-            std::vector<double> hw_states_positions_;
-            std::vector<double> hw_commands_positions_;
 
+            /// Command and State Interfaces 
+            // Actuators commands
+            std::vector<double> hw_actuators_commands_;
+
+            // Actuators states
+            std::vector<double> hw_actuators_states_;
+
+            // RC states
+            std::vector<double> hw_rc_states_;
+
+            // Multiplexer states
+            std::vector<double> hw_multiplexer_states_;
+
+
+            /// Hardware Interface Parameters
             // Serial port
             std::string port_;
 
             // Serial baud rate
             unsigned int baud_rate_;
 
-            // NMEA parser
-            nmea::NMEAParser parser;
+            // Joint command parameters
+            std::vector<JointParameters> joint_parameters_;
 
-            // Expiration duration
-            rclcpp::Duration duration_expiration_;
+            // Check if the rc want to be used
+            bool use_rc_;
+
+            // Check if the multiplexer want to be used
+            bool use_multiplexer_;
+            
 
             // Driver
             rtac::asio::Stream::Ptr serial_ = nullptr;
 
+            // Time last read call
+            rclcpp::Duration expiration_duration_;
+
             // Write timeout
             uint16_t write_timeout_;
+            
 
-            // Write actuator commands on serial
-            std::size_t serial_write_actuators_commands();
+            /// Serial read
+            // Time mutex
+            std::mutex time_mutex_;
+
+            // Reading time
+            rclcpp::Time time_read_;
 
             // Read buffer
             std::string read_buffer_;
 
-            // Time last read call
-            rclcpp::Time time_read_;
-
-            // Time received last state
-            rclcpp::Time time_last_received_;
-
-            // mutex for read data
-            std::mutex m_read_;
-
-            // Is data consumable
-            bool data_consumable_;
-
             // Read callback
             void read_callback(const rtac::asio::SerialStream::ErrorCode& /*err*/, std::size_t count);
 
-            // Actuators mutex
-            std::mutex actuators_mutex_;
+            // NMEA parser
+            nmea::NMEAParser parser;
 
-            // Actuators Commands
-            std::unique_ptr<ActuatorsCommands<rclcpp::Time>> actuators_commands_ = nullptr;
+            // Writen command
+            nmea::NMEACommand RHACT_command_;
 
             // RTACT Handler
             void RTACT_handler(const nmea::NMEASentence& n);
 
-            // RCR mutex
-            std::mutex rc_mutex_;
+            // Actuators mutex
+            std::mutex actuators_mutex_;
 
-            // RCR Commands
-            std::unique_ptr<RCCommands<rclcpp::Time>> rc_commands_ = nullptr;
+            // Actuators read time
+            rclcpp::Time actuators_time_;
+
+            // Read actuators states
+            std::vector<std::uint16_t> read_actuators_states_;
 
             // RTRCR handler
             void RTRCR_handler(const nmea::NMEASentence& n);
 
-            // Multiplexer mutex
-            std::mutex multiplexer_mutex_;
+            // RCR mutex
+            std::mutex rc_mutex_;
 
-            // Multiplexer Commands
-            std::unique_ptr<MultiplexerCommands<rclcpp::Time>> multiplexer_commands_ = nullptr;
+            // RC read time
+            rclcpp::Time rc_time_;
+
+            // Read RC states
+            std::vector<std::uint16_t> read_rc_states_;
 
             // RTMPX handler
             void RTMPX_handler(const nmea::NMEASentence& n);
+
+            // Multiplexer mutex
+            std::mutex multiplexer_mutex_;
+
+            // Multiplexer read time
+            rclcpp::Time multiplexer_time_;
+
+            // Read multiplexer states
+            std::vector<double> read_multiplexer_states_;
+
     };
+
 } // riptide_hardware
 
 #endif // TAIL_HARDWARE_HPP

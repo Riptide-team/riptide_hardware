@@ -131,11 +131,24 @@ namespace riptide_hardware {
                 std::begin(info_.joints), std::end(info_.joints),
                 [&](const auto &joint) { return joint.name.find(name) != std::string::npos; }
             );
-            return {
-                std::stod(it->command_interfaces[0].min),
-                std::stod(it->command_interfaces[0].max),
-                static_cast<std::uint16_t>(std::stoi(it->command_interfaces[0].initial_value))
-            };
+            if (it->parameters.at("pwm_neutral") == it->parameters.end()) {
+                RCLCPP_DEBUG(
+                    rclcpp::get_logger("TailHardware"),
+                    "Neutral PWM will be set to the default 1500 for %s joint", (it->name).c_str()
+                );
+                return {
+                    std::stod(it->command_interfaces[0].min),
+                    std::stod(it->command_interfaces[0].max),
+                    static_cast<std::uint16_t>(1500)
+                };
+            }
+            else {
+                return {
+                    std::stod(it->command_interfaces[0].min),
+                    std::stod(it->command_interfaces[0].max),
+                    static_cast<std::uint16_t>(std::stoi(it->parameters.at("pwm_neutral")))
+                };
+            }
         };
 
         std::vector<std::string> actuator_names = {"thruster", "d_fin", "p_fin", "s_fin"};

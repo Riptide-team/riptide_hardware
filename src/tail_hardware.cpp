@@ -82,17 +82,17 @@ namespace riptide_hardware {
         RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "port: %s - baud rate: %d", port_.c_str(), baud_rate_);
 
         // Getting baudrate from hardware parameters
-        if (info_.hardware_parameters.find("expiration_duration") == info_.hardware_parameters.end()) {
+        if (info_.hardware_parameters.find("expiration_duration_ms") == info_.hardware_parameters.end()) {
             RCLCPP_FATAL(
                 rclcpp::get_logger("TailHardware"),
-                "You need to specify the expiration_duration in ros2_control urdf tag as param!"
+                "You need to specify the expiration_duration_ms in ros2_control urdf tag as param!"
             );
             return hardware_interface::CallbackReturn::ERROR;
         }
 
         expiration_duration_ = rclcpp::Duration(
             std::chrono::milliseconds(
-                std::stoi(info_.hardware_parameters.at("expiration_duration"))
+                std::stoi(info_.hardware_parameters.at("expiration_duration_ms"))
             )
         );
 

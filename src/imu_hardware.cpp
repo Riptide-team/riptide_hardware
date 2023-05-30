@@ -69,7 +69,7 @@ namespace riptide_hardware {
         // Instanciate the driver
         // try {
             driver_ = std::make_unique<SpartonAHRSM1Driver>(port_, baud_rate_);
-            bool ret = driver_->reset();
+            bool ret = driver_->init();
             if (!ret) {
                 RCLCPP_FATAL(
                     rclcpp::get_logger("IMUHardware"),

@@ -143,6 +143,7 @@ namespace riptide_hardware {
                 };
             }
             else {
+                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "PWM neutral %s", it->parameters.at("pwm_neutral"));
                 return {
                     std::stod(it->command_interfaces[0].min),
                     std::stod(it->command_interfaces[0].max),

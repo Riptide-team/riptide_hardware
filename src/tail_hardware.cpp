@@ -125,6 +125,7 @@ namespace riptide_hardware {
             );
         }
 
+        // TODO add try except around stoi or stod
         // Getting joint command parameters
         auto get_joint_params = [&](std::string name) -> JointParameters {
             auto it = std::find_if(
@@ -143,9 +144,7 @@ namespace riptide_hardware {
                 };
             }
             else {
-                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "PWM neutral %s", (it->parameters.at("pwm_neutral")).c_str());
-                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Joint min %s", (it->command_interfaces[0].min).c_str());
-                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "Joint max %s", (it->command_interfaces[0].max).c_str());
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "JointParameter %s: %s, %s, %S", (it->command_interfaces[0].min).c_str(), (it->command_interfaces[0].max).c_str(), (it->name).c_str(), (it->parameters.at("pwm_neutral")).c_str());
                 return {
                     std::stod(it->command_interfaces[0].min),
                     std::stod(it->command_interfaces[0].max),

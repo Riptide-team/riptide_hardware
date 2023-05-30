@@ -351,7 +351,7 @@ namespace riptide_hardware {
         for (const auto &joint: info_.joints) {
             // Thruster [command: `velocity`]
             if (joint.name.find("thruster") != std::string::npos) {
-                if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name != "velocity")) {
+                if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name == "velocity")) {
                     command_interfaces.emplace_back(
                         hardware_interface::CommandInterface(
                             joint.name, joint.command_interfaces[0].name, &hw_actuators_commands_[0]
@@ -368,7 +368,7 @@ namespace riptide_hardware {
 
             // D Fin [command: `position`]
             if (joint.name.find("d_fin") != std::string::npos) {
-                if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name != "position")) {
+                if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name == "position")) {
                     command_interfaces.emplace_back(
                         hardware_interface::CommandInterface(
                             joint.name, joint.command_interfaces[0].name, &hw_actuators_commands_[1]
@@ -385,7 +385,7 @@ namespace riptide_hardware {
 
             // P Fin [command: `position`]
             if (joint.name.find("p_fin") != std::string::npos) {
-                if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name != "position")) {
+                if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name == "position")) {
                     command_interfaces.emplace_back(
                         hardware_interface::CommandInterface(
                             joint.name, joint.command_interfaces[0].name, &hw_actuators_commands_[2]
@@ -402,7 +402,7 @@ namespace riptide_hardware {
 
             // S Fin [command: `position`]
             if (joint.name.find("s_fin") != std::string::npos) {
-                if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name != "position")) {
+                if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name == "position")) {
                     command_interfaces.emplace_back(
                         hardware_interface::CommandInterface(
                             joint.name, joint.command_interfaces[0].name, &hw_actuators_commands_[3]

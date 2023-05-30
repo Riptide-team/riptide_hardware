@@ -756,7 +756,7 @@ namespace riptide_hardware {
 
             // Check if all received pwm are between 1000 and 2000
             if (std::all_of(commands.begin(), commands.end(), [](std::uint16_t i){ return ((i>=1000) and (i<=2000)); })) {
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d", commands[0], commands[1], commands[2], commands[3]);
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], time_read_.seconds());
                 {
                     std::scoped_lock<std::mutex> lock(time_mutex_);
                     actuators_time_ = time_read_;
@@ -768,7 +768,7 @@ namespace riptide_hardware {
             }
             else {
                 RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "RTACT commands are not in range [1000, 2000]us!");
-                RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d", commands[0], commands[1], commands[2], commands[3]);
+                RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], time_read_.seconds());
             }
         }
         else {
@@ -810,7 +810,7 @@ namespace riptide_hardware {
 
             // Check if all received pwm are between 1000 and 2000
             if (std::all_of(commands.begin(), commands.end(), [](std::uint16_t i){ return ((i>=1000) and (i<=2000)); })) {
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5]);
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5], time_read_.seconds());
                 {
                     std::scoped_lock<std::mutex> lock(time_mutex_);
                     rc_time_ = time_read_;
@@ -822,7 +822,7 @@ namespace riptide_hardware {
             }
             else {
                 RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "RTRCR commands are not in range [1000, 2000]us!");
-                RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5]);
+                RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5], time_read_.seconds());
             }
         }
         else {
@@ -864,7 +864,7 @@ namespace riptide_hardware {
 
             // Check if all received pwm are between 1000 and 2000
             if ((commands[1] >= 0.) and (commands[1] <= 100.) and (commands[0] >= 0.) and (commands[0] <= 1.)) {
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f", commands[0], commands[1]);
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f, %f", commands[0], commands[1], time_read_.seconds());
                 {
                     std::scoped_lock<std::mutex> lock(time_mutex_);
                     multiplexer_time_ = time_read_;
@@ -876,7 +876,7 @@ namespace riptide_hardware {
             }
             else {
                 RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX commands are not in range [1000, 2000]us!");
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f", commands[0], commands[1]);
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f, %f", commands[0], commands[1], time_read_.seconds());
             }
         }
         else {

@@ -144,7 +144,7 @@ namespace riptide_hardware {
                 };
             }
             else {
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "JointParameter %s: %s, %s, %s", (it->command_interfaces[0].min).c_str(), (it->command_interfaces[0].max).c_str(), (it->name).c_str(), (it->parameters.at("pwm_neutral")).c_str());
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "JointParameter %s: %s, %s, %s", (it->name).c_str(), (it->command_interfaces[0].min).c_str(), (it->command_interfaces[0].max).c_str(), (it->parameters.at("pwm_neutral")).c_str());
                 return {
                     std::stod(it->command_interfaces[0].min),
                     std::stod(it->command_interfaces[0].max),
@@ -162,7 +162,7 @@ namespace riptide_hardware {
         // Resizing sensors states vectors
         for (const auto &sensor: info_.sensors) {
             if (sensor.name.find("rc") != std::string::npos) {
-                ss.clear();
+                ss.str("");
                 for (const auto &state_interface: sensor.state_interfaces) {
                     ss << state_interface.name << ", ";
                 }
@@ -178,7 +178,7 @@ namespace riptide_hardware {
                 );
             }
             else if (sensor.name.find("multiplexer") != std::string::npos) {
-                ss.clear();
+                ss.str("");
                 for (const auto &state_interface: sensor.state_interfaces) {
                     ss << state_interface.name << ", ";
                 }
@@ -264,7 +264,7 @@ namespace riptide_hardware {
             }
 
             // P Fin [state: `position`]
-            if (joint.name.find("d_fin") != std::string::npos) {
+            if (joint.name.find("p_fin") != std::string::npos) {
                 if ((joint.state_interfaces.size() == 1) and (joint.state_interfaces[0].name == "position")) {
                     state_interfaces.emplace_back(
                         hardware_interface::StateInterface(
@@ -281,7 +281,7 @@ namespace riptide_hardware {
             }
 
             // S Fin [state: `position`]
-            if (joint.name.find("d_fin") != std::string::npos) {
+            if (joint.name.find("s_fin") != std::string::npos) {
                 if ((joint.state_interfaces.size() == 1) and (joint.state_interfaces[0].name == "position")) {
                     state_interfaces.emplace_back(
                         hardware_interface::StateInterface(

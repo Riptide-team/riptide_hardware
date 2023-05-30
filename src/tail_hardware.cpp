@@ -131,7 +131,7 @@ namespace riptide_hardware {
                 std::begin(info_.joints), std::end(info_.joints),
                 [&](const auto &joint) { return joint.name.find(name) != std::string::npos; }
             );
-            if (it->parameters.at("pwm_neutral") == it->parameters.end()) {
+            if (it->parameters.find("pwm_neutral") == it->parameters.end()) {
                 RCLCPP_DEBUG(
                     rclcpp::get_logger("TailHardware"),
                     "Neutral PWM will be set to the default 1500 for %s joint", (it->name).c_str()
@@ -143,7 +143,7 @@ namespace riptide_hardware {
                 };
             }
             else {
-                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "PWM neutral %s", it->parameters.at("pwm_neutral"));
+                RCLCPP_INFO(rclcpp::get_logger("TailHardware"), "PWM neutral %s", (it->parameters.at("pwm_neutral")).c_str());
                 return {
                     std::stod(it->command_interfaces[0].min),
                     std::stod(it->command_interfaces[0].max),

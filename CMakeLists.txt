@@ -19,17 +19,11 @@ include(FetchContent) # once in the project to include the module
 FetchContent_Declare(sparton_driver GIT_REPOSITORY https://github.com/Teusner-Thesis/Sparton_AHRS_M1_Driver.git GIT_TAG main)
 FetchContent_MakeAvailable(sparton_driver)
 
-FetchContent_Declare(pololu_driver GIT_REPOSITORY https://github.com/Teusner/Pololu_Maestro_Driver.git GIT_TAG main)
-FetchContent_MakeAvailable(pololu_driver)
-
 FetchContent_Declare(sea_scan_echo_driver GIT_REPOSITORY https://github.com/Teusner/Sea_Scan_Echo_Marine_Sonic_Driver.git GIT_TAG main)
 FetchContent_MakeAvailable(sea_scan_echo_driver)
 
 FetchContent_Declare(ms5837_driver GIT_REPOSITORY https://github.com/Teusner/MS5837_Driver.git GIT_TAG main)
 FetchContent_MakeAvailable(ms5837_driver)
-
-FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz)
-FetchContent_MakeAvailable(json)
 
 FetchContent_Declare(rtac_asio GIT_REPOSITORY https://github.com/pnarvor/rtac_asio.git GIT_TAG master)
 FetchContent_MakeAvailable(rtac_asio)
@@ -39,9 +33,9 @@ FetchContent_MakeAvailable(NemaTode)
 
 
 # Compile riptide_hardware
-add_library(${PROJECT_NAME} SHARED src/actuators_hardware.cpp src/imu_hardware.cpp src/battery_card_hardware.cpp src/pressure_hardware.cpp src/echosounder_hardware.cpp src/tail_hardware.cpp)
+add_library(${PROJECT_NAME} SHARED src/imu_hardware.cpp src/pressure_hardware.cpp src/echosounder_hardware.cpp src/tail_hardware.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE include)
-target_link_libraries(${PROJECT_NAME} sparton_ahrs_m1_driver pololu_maestro_driver sea_scan_echo_driver ms5837_driver nlohmann_json::nlohmann_json rtac_asio NemaTode)
+target_link_libraries(${PROJECT_NAME} sparton_ahrs_m1_driver sea_scan_echo_driver ms5837_driver rtac_asio NemaTode)
 ament_target_dependencies(
   ${PROJECT_NAME}
   hardware_interface
@@ -87,10 +81,8 @@ ament_export_dependencies(
   rclcpp
   rclcpp_lifecycle
   sparton_m1_driver
-  pololu_driver
   sea_scan_echo_driver
   ms5837_driver
-  json
   rtac_asio
 )
 ament_package()

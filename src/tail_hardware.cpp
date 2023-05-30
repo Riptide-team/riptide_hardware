@@ -225,12 +225,13 @@ namespace riptide_hardware {
     }
 
     std::vector<hardware_interface::StateInterface> TailHardware::export_state_interfaces() {
+        // TODO migrate all check in on_init
         std::vector<hardware_interface::StateInterface> state_interfaces;
 
         for (const auto &joint: info_.joints) {
             // Thruster [state: `velocity`]
             if (joint.name.find("thruster") != std::string::npos) {
-                if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name != "velocity")) {
+                if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name == "velocity")) {
                     state_interfaces.emplace_back(
                         hardware_interface::StateInterface(
                             joint.name, joint.state_interfaces[0].name, &hw_actuators_commands_[0]
@@ -247,7 +248,7 @@ namespace riptide_hardware {
 
             // D Fin [state: `position`]
             if (joint.name.find("d_fin") != std::string::npos) {
-                if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name != "position")) {
+                if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name == "position")) {
                     state_interfaces.emplace_back(
                         hardware_interface::StateInterface(
                             joint.name, joint.state_interfaces[0].name, &hw_actuators_commands_[1]
@@ -264,7 +265,7 @@ namespace riptide_hardware {
 
             // P Fin [state: `position`]
             if (joint.name.find("d_fin") != std::string::npos) {
-                if ((joint.state_interfaces.size() == 1) and (joint.state_interfaces[0].name != "position")) {
+                if ((joint.state_interfaces.size() == 1) and (joint.state_interfaces[0].name == "position")) {
                     state_interfaces.emplace_back(
                         hardware_interface::StateInterface(
                             joint.name, joint.state_interfaces[0].name, &hw_actuators_commands_[2]
@@ -281,7 +282,7 @@ namespace riptide_hardware {
 
             // S Fin [state: `position`]
             if (joint.name.find("d_fin") != std::string::npos) {
-                if ((joint.state_interfaces.size() == 1) and (joint.state_interfaces[0].name != "position")) {
+                if ((joint.state_interfaces.size() == 1) and (joint.state_interfaces[0].name == "position")) {
                     state_interfaces.emplace_back(
                         hardware_interface::StateInterface(
                             joint.name, joint.state_interfaces[0].name, &hw_actuators_commands_[3]
@@ -346,6 +347,7 @@ namespace riptide_hardware {
     }
 
     std::vector<hardware_interface::CommandInterface> TailHardware::export_command_interfaces() {
+        // TODO migrate all check in on_init
         std::vector<hardware_interface::CommandInterface> command_interfaces;
 
         for (const auto &joint: info_.joints) {

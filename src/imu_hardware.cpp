@@ -110,7 +110,7 @@ namespace riptide_hardware {
 
     hardware_interface::return_type IMUHardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
         // Accelerometer
-        std::vector<float> a;
+        std::vector<double> a;
         try {
             a = driver_->read_accelerometer();
         }
@@ -125,7 +125,7 @@ namespace riptide_hardware {
         std::copy(a.begin(), a.end(), hw_sensor_states_.begin());
 
         // Gyrometer
-        std::vector<float> g;
+        std::vector<double> g;
         try {
             g = driver_->read_gyroscope();
         }
@@ -140,7 +140,7 @@ namespace riptide_hardware {
         std::copy(g.begin(), g.end(), hw_sensor_states_.begin()+3);
 
         // Quaternion
-        std::vector<float> q;
+        std::vector<double> q;
         try {
             q = driver_->read_quaternion();
         }
@@ -170,7 +170,7 @@ namespace riptide_hardware {
         hw_sensor_states_[9] = quat.z();
 
         // Magnetometer
-        std::vector<float> m;
+        std::vector<double> m;
         try {
             m = driver_->read_magnetometer();
         }
@@ -186,7 +186,7 @@ namespace riptide_hardware {
 
         // Debug
         std::stringstream ss;
-        std::copy(hw_sensor_states_.begin(), hw_sensor_states_.end(), std::ostream_iterator<float>(ss, " "));
+        std::copy(hw_sensor_states_.begin(), hw_sensor_states_.end(), std::ostream_iterator<double>(ss, " "));
         RCLCPP_DEBUG(rclcpp::get_logger("IMUHardware"), "Reading : %s", (ss.str()).c_str());
 
         return hardware_interface::return_type::OK;

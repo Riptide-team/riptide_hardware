@@ -569,7 +569,7 @@ namespace riptide_hardware {
 
         // Getting actuators commands
         {
-            if (time - actuators_time_ < expiration_duration_) {
+            if ((time.seconds() - actuators_time_.seconds()) < expiration_duration_.seconds()) {
                 std::scoped_lock<std::mutex> lock(actuators_mutex_);
 
                 // Generate commands from values
@@ -618,7 +618,7 @@ namespace riptide_hardware {
 
         // Getting RC commands
         {
-            if (time - rc_time_ < expiration_duration_) {
+            if ((time.seconds() - rc_time_.seconds()) < expiration_duration_.seconds()) {
                 std::scoped_lock<std::mutex> lock(rc_mutex_);
                 std::vector<double> values;
                 for (std::size_t i = 0; i < 6; ++i) {
@@ -645,7 +645,7 @@ namespace riptide_hardware {
 
         // Getting Multiplexer commands commands
         {
-            if (time - multiplexer_time_ < expiration_duration_) {
+            if ((time.seconds() - multiplexer_time_.seconds()) < expiration_duration_.seconds()) {
                 std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
                 hw_multiplexer_states_ = read_multiplexer_states_;
                 RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read RTMPX %f %f (%f seconds ago)", hw_multiplexer_states_[0], hw_multiplexer_states_[1], (time - actuators_time_).seconds());

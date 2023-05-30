@@ -155,7 +155,7 @@ namespace riptide_hardware {
         std::vector<std::string> actuator_names = {"thruster", "d_fin", "p_fin", "s_fin"};
         std::transform(
             actuator_names.cbegin(), actuator_names.cend(),
-            joint_parameters_.begin(), [&](std::string name) { return get_joint_params(name); }
+            std::back_inserter(joint_parameters_)), [&](std::string name) { return get_joint_params(name); }
         );
 
         // Resizing sensors states vectors

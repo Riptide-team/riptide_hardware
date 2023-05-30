@@ -93,12 +93,6 @@ namespace riptide_hardware {
             
 
             /// Serial read
-            // Time mutex
-            std::mutex time_mutex_;
-
-            // Reading time
-            rclcpp::Time time_read_;
-
             // Read buffer
             std::string read_buffer_;
 

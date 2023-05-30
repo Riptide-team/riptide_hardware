@@ -205,6 +205,11 @@ namespace riptide_hardware {
         // TODO Think about it
         write_timeout_ = 1000; // 1000 ms of timeout to write commands
 
+        // Initialize time read variables
+        actuators_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
+        rc_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
+        multiplexer_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
+
         // Written command initialization
         RHACT_command_.name = "RHACT";
 
@@ -561,15 +566,11 @@ namespace riptide_hardware {
     }
 
     hardware_interface::return_type TailHardware::read(const rclcpp::Time & time, const rclcpp::Duration & /*period*/) {
-        // Store time
-        {
-            std::scoped_lock<std::mutex> lock(time_mutex_);
-            time_read_ = time;
-        }
+        
 
         // Getting actuators commands
         {
-            if ((time.seconds() - actuators_time_.seconds()) < expiration_duration_.seconds()) {
+            if ((time - actuators_time_) < expiration_duration_) {
                 std::scoped_lock<std::mutex> lock(actuators_mutex_);
 
                 // Generate commands from values
@@ -756,19 +757,16 @@ namespace riptide_hardware {
 
             // Check if all received pwm are between 1000 and 2000
             if (std::all_of(commands.begin(), commands.end(), [](std::uint16_t i){ return ((i>=1000) and (i<=2000)); })) {
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], time_read_.seconds());
-                {
-                    std::scoped_lock<std::mutex> lock(time_mutex_);
-                    actuators_time_ = time_read_;
-                }
                 {
                     std::scoped_lock<std::mutex> lock(actuators_mutex_);
                     read_actuators_states_ = std::move(commands);
+                    actuators_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
+                    RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], actuators_time_.seconds());
                 }
             }
             else {
                 RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "RTACT commands are not in range [1000, 2000]us!");
-                RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], time_read_.seconds());
+                RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], rclcpp::Clock(RCL_ROS_TIME).now().seconds());
             }
         }
         else {
@@ -810,19 +808,16 @@ namespace riptide_hardware {
 
             // Check if all received pwm are between 1000 and 2000
             if (std::all_of(commands.begin(), commands.end(), [](std::uint16_t i){ return ((i>=1000) and (i<=2000)); })) {
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5], time_read_.seconds());
-                {
-                    std::scoped_lock<std::mutex> lock(time_mutex_);
-                    rc_time_ = time_read_;
-                }
                 {
                     std::scoped_lock<std::mutex> lock(rc_mutex_);
+                    rc_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
                     read_rc_states_ = std::move(commands);
+                    RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5], rc_time_.seconds());
                 }
             }
             else {
                 RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "RTRCR commands are not in range [1000, 2000]us!");
-                RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5], time_read_.seconds());
+                RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5], rclcpp::Clock(RCL_ROS_TIME).now().seconds());
             }
         }
         else {
@@ -864,19 +859,16 @@ namespace riptide_hardware {
 
             // Check if all received pwm are between 1000 and 2000
             if ((commands[1] >= 0.) and (commands[1] <= 100.) and (commands[0] >= 0.) and (commands[0] <= 1.)) {
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f, %f", commands[0], commands[1], time_read_.seconds());
-                {
-                    std::scoped_lock<std::mutex> lock(time_mutex_);
-                    multiplexer_time_ = time_read_;
-                }
                 {
                     std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
                     read_multiplexer_states_ = std::move(commands);
+                    multiplexer_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
+                    RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f, %f", commands[0], commands[1], multiplexer_time_.seconds());
                 }
             }
             else {
                 RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX commands are not in range [1000, 2000]us!");
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f, %f", commands[0], commands[1], time_read_.seconds());
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f, %f", commands[0], commands[1], rclcpp::Clock(RCL_ROS_TIME).now().seconds());
             }
         }
         else {

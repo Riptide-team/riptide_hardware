@@ -144,7 +144,7 @@ namespace riptide_hardware {
                 };
             }
             else {
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "JointParameter %s: %s, %s, %S", (it->command_interfaces[0].min).c_str(), (it->command_interfaces[0].max).c_str(), (it->name).c_str(), (it->parameters.at("pwm_neutral")).c_str());
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "JointParameter %s: %s, %s, %s", (it->command_interfaces[0].min).c_str(), (it->command_interfaces[0].max).c_str(), (it->name).c_str(), (it->parameters.at("pwm_neutral")).c_str());
                 return {
                     std::stod(it->command_interfaces[0].min),
                     std::stod(it->command_interfaces[0].max),

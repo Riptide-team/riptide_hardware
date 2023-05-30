@@ -34,7 +34,7 @@ namespace riptide_hardware {
                 parser.readByte(read_buffer_[i]);
             }
             catch (nmea::NMEAParseError& e){
-                RCLCPP_DEBUG(
+                RCLCPP_WARN(
                     rclcpp::get_logger("TailHardware"),
                     "Error while parsing NMEA data (%s)!", (e.what()).c_str()
                 );

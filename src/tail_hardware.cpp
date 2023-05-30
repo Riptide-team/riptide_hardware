@@ -608,10 +608,10 @@ namespace riptide_hardware {
 
                 // Copying values into hw_actuators_states_
                 hw_actuators_states_ = std::move(values);
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Reading RTACT %f %f %f %f (%f seconds ago)", hw_actuators_states_[0], hw_actuators_states_[1], hw_actuators_states_[2], hw_actuators_states_[3], (time - actuators_time_).seconds());
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Reading RTACT %f %f %f %f (%f seconds ago)", hw_actuators_states_[0], hw_actuators_states_[1], hw_actuators_states_[2], hw_actuators_states_[3], (time.seconds() - actuators_time_.seconds()));
             }
             else {
-                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "Actuators states are expired! Last received RTACT frame was %f seconds ago.", (time - actuators_time_).seconds());
+                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "Actuators states are expired! Last received RTACT frame was %f seconds ago.", (time.seconds() - actuators_time_.seconds()));
                 return hardware_interface::return_type::ERROR;
             }
         }
@@ -634,10 +634,10 @@ namespace riptide_hardware {
                     );
                 }
                 hw_rc_states_ = std::move(values);
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read RTRCR %f %f %f %f %f %f (%f seconds ago)", hw_rc_states_[0], hw_rc_states_[1], hw_rc_states_[2], hw_rc_states_[3], hw_rc_states_[4], hw_rc_states_[5], (time - rc_time_).seconds());
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read RTRCR %f %f %f %f %f %f (%f seconds ago)", hw_rc_states_[0], hw_rc_states_[1], hw_rc_states_[2], hw_rc_states_[3], hw_rc_states_[4], hw_rc_states_[5], (time.seconds() - rc_time_.seconds()));
             }
             else {
-                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "RC states are expired! Last received RTRCR frame was %f seconds ago.", (time - rc_time_).seconds());
+                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "RC states are expired! Last received RTRCR frame was %f seconds ago.", (time.seconds() - rc_time_.seconds()));
                 return hardware_interface::return_type::ERROR;
             }
         }
@@ -648,10 +648,10 @@ namespace riptide_hardware {
             if ((time.seconds() - multiplexer_time_.seconds()) < expiration_duration_.seconds()) {
                 std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
                 hw_multiplexer_states_ = read_multiplexer_states_;
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read RTMPX %f %f (%f seconds ago)", hw_multiplexer_states_[0], hw_multiplexer_states_[1], (time - actuators_time_).seconds());
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read RTMPX %f %f (%f seconds ago)", hw_multiplexer_states_[0], hw_multiplexer_states_[1], (time.seconds() - actuators_time_.seconds()));
             }
             else {
-                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "RC states are expired! Last received RTMPX frame was %f seconds ago.", (time - actuators_time_).seconds());
+                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "RC states are expired! Last received RTMPX frame was %f seconds ago.", (time.seconds() - actuators_time_.seconds()));
                 return hardware_interface::return_type::ERROR;
             }
         }

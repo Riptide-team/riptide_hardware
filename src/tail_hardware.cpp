@@ -450,6 +450,7 @@ namespace riptide_hardware {
         // Starting the serial
         serial_->start();
         serial_->flush();
+        serial_->enable_io_dump("./rx.log", "./tx.log");
 
         // Launching async read
         read_buffer_ = std::string(1024, '\0');

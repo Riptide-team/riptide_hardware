@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include <hardware_interface/sensor_interface.hpp"
+#include <hardware_interface/sensor_interface.hpp>
 #include <hardware_interface/types/hardware_interface_return_values.hpp>
 #include <rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp>
 

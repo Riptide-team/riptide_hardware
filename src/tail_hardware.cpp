@@ -449,6 +449,7 @@ namespace riptide_hardware {
 
         // Starting the serial
         serial_->start();
+        serial_->flush();
 
         // Launching async read
         read_buffer_ = std::string(1024, '\0');

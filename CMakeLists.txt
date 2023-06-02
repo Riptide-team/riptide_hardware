@@ -14,6 +14,9 @@ find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 
+# For nice backtrace print at bug
+find_package(backward_ros REQUIRED)
+
 # External libraries driver
 include(FetchContent) # once in the project to include the module
 FetchContent_Declare(sparton_driver GIT_REPOSITORY https://github.com/Teusner-Thesis/Sparton_AHRS_M1_Driver.git GIT_TAG main)

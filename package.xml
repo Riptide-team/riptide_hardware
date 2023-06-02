@@ -12,6 +12,8 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
 
+  <depend>backward_ros</depend>
+
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <build_depend>libboost-system-dev</build_depend>

@@ -638,12 +638,14 @@ namespace riptide_hardware {
                     joint_parameters_[0].min,
                     joint_parameters_[0].max
                 );
+                std::cout << value << std::endl;
                 hw_actuators_states_[0] = value;
 
                 // Fin clamp
                 for (std::size_t i = 1; i < 4; ++i) {
                     // Clamping values between joint_parameters_ min and max
                     double value = std::clamp<double>(
+                    std::cout << value << std::endl;
                         M_PI / 2000. * static_cast<double>(read_actuators_states_[i] - joint_parameters_[i].pwm_neutral),
                         joint_parameters_[i].min,
                         joint_parameters_[i].max

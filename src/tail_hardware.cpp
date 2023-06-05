@@ -633,22 +633,22 @@ namespace riptide_hardware {
                 std::scoped_lock<std::mutex> lock(actuators_mutex_);
 
                 // Thruster clamp
-                double value = static_cast<double>(read_actuators_states_[0] - joint_parameters_[0].pwm_neutral) / 500.;
-                hw_actuators_states_[0] = std::clamp<double>(
-                    value,
+                double value = std::clamp<double>(
+                    static_cast<double>(read_actuators_states_[0] - joint_parameters_[0].pwm_neutral) / 500.,
                     joint_parameters_[0].min,
                     joint_parameters_[0].max
                 );
+                hw_actuators_states_[0] = value;
 
                 // Fin clamp
                 for (std::size_t i = 1; i < 4; ++i) {
                     // Clamping values between joint_parameters_ min and max
-                    double value = M_PI / 2000. * static_cast<double>(read_actuators_states_[i] - joint_parameters_[i].pwm_neutral);
-                    hw_actuators_states_[i] = std::clamp<double>(
-                        value,
+                    double value = std::clamp<double>(
+                        M_PI / 2000. * static_cast<double>(read_actuators_states_[i] - joint_parameters_[i].pwm_neutral),
                         joint_parameters_[i].min,
                         joint_parameters_[i].max
                     );
+                    hw_actuators_states_[i] = value;
                 }
                 RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Reading RTACT %f %f %f %f (%f seconds ago)", hw_actuators_states_[0], hw_actuators_states_[1], hw_actuators_states_[2], hw_actuators_states_[3], (time - actuators_time_).seconds());
             }

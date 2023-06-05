@@ -702,16 +702,14 @@ namespace riptide_hardware {
         if (std::all_of(hw_actuators_commands_.begin(), hw_actuators_commands_.end(), [](double i){ return !std::isnan(i); })) {
             // Thruster clamp
             values.push_back(
-                static_cast<std::uint16_t>(
-                    std::clamp(
-                        500. * std::clamp(
-                            hw_actuators_commands_[0],
-                            joint_parameters_[0].min,
-                            joint_parameters_[0].max
-                        ) + joint_parameters_[0].pwm_neutral,
-                        1000.,
-                        2000.
-                    )
+                std::clamp<std::uint16_t>(
+                    static_cast<std::uint16_t>(500. * std::clamp<double>(
+                        hw_actuators_commands_[0],
+                        joint_parameters_[0].min,
+                        joint_parameters_[0].max
+                    ) + joint_parameters_[0].pwm_neutral),
+                    static_cast<std::uint16_t>(1000.),
+                    static_cast<std::uint16_t>(2000.)
                 )
             );
 
@@ -719,10 +717,10 @@ namespace riptide_hardware {
             for (std::size_t i = 1; i < 4; ++i) {
                 // Clamping values between 1000 and 2000
                 values.push_back(
+                    joint_parameters_[i].pwm_neutral + 
                     static_cast<std::uint16_t>(
-                        joint_parameters_[i].pwm_neutral + 
                         2000. / M_PI *
-                        std::clamp(
+                        std::clamp<double>(
                             hw_actuators_commands_[i],
                             joint_parameters_[i].min,
                             joint_parameters_[i].max

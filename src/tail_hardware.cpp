@@ -148,7 +148,7 @@ namespace riptide_hardware {
                 return {
                     std::stod(it->command_interfaces[0].min),
                     std::stod(it->command_interfaces[0].max),
-                    static_cast<std::uint16_t>(std::stoi(it->parameters.at("pwm_neutral")))
+                    static_cast<std::uint16_t>(std::stoul(it->parameters.at("pwm_neutral")))
                 };
             }
         };
@@ -182,6 +182,7 @@ namespace riptide_hardware {
                 for (const auto &state_interface: sensor.state_interfaces) {
                     ss << state_interface.name << ", ";
                 }
+                use_multiplexer_ = true;
                 if (sensor.state_interfaces.size() != 2) {
                     RCLCPP_FATAL(
                         rclcpp::get_logger("TailHardware"),
@@ -204,11 +205,6 @@ namespace riptide_hardware {
 
         // TODO Think about it
         write_timeout_ = 1000; // 1000 ms of timeout to write commands
-
-        // Initialize time read variables
-        actuators_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
-        rc_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
-        multiplexer_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
 
         // Written command initialization
         RHACT_command_.name = "RHACT";
@@ -239,7 +235,7 @@ namespace riptide_hardware {
                 if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name == "velocity")) {
                     state_interfaces.emplace_back(
                         hardware_interface::StateInterface(
-                            joint.name, joint.state_interfaces[0].name, &hw_actuators_commands_[0]
+                            joint.name, joint.state_interfaces[0].name, &hw_actuators_states_[0]
                         )
                     );
                 }
@@ -256,7 +252,7 @@ namespace riptide_hardware {
                 if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name == "position")) {
                     state_interfaces.emplace_back(
                         hardware_interface::StateInterface(
-                            joint.name, joint.state_interfaces[0].name, &hw_actuators_commands_[1]
+                            joint.name, joint.state_interfaces[0].name, &hw_actuators_states_[1]
                         )
                     );
                 }
@@ -273,7 +269,7 @@ namespace riptide_hardware {
                 if ((joint.state_interfaces.size() == 1) and (joint.state_interfaces[0].name == "position")) {
                     state_interfaces.emplace_back(
                         hardware_interface::StateInterface(
-                            joint.name, joint.state_interfaces[0].name, &hw_actuators_commands_[2]
+                            joint.name, joint.state_interfaces[0].name, &hw_actuators_states_[2]
                         )
                     );
                 }
@@ -290,7 +286,7 @@ namespace riptide_hardware {
                 if ((joint.state_interfaces.size() == 1) and (joint.state_interfaces[0].name == "position")) {
                     state_interfaces.emplace_back(
                         hardware_interface::StateInterface(
-                            joint.name, joint.state_interfaces[0].name, &hw_actuators_commands_[3]
+                            joint.name, joint.state_interfaces[0].name, &hw_actuators_states_[3]
                         )
                     );
                 }
@@ -452,6 +448,68 @@ namespace riptide_hardware {
         serial_->flush();
         serial_->enable_io_dump("./rx_tail.log", "./tx_tail.log");
 
+        // Initialize time read variables
+        actuators_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
+        rc_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
+        multiplexer_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
+
+        // Filling read_actuators_states
+        read_actuators_states_.resize(4);
+        for (std::size_t i = 0; i < read_actuators_states_.size(); ++i) {
+            read_actuators_states_[i] = joint_parameters_[i].pwm_neutral;
+        }
+
+        // Filling read_rc_states
+        read_rc_states_.resize(6);
+        std::fill(read_rc_states_.begin(), read_rc_states_.end(), static_cast<std::uint16_t>(1500));
+
+        // Filling read_multiplexer_states
+        read_multiplexer_states_.resize(2);
+        std::fill(read_multiplexer_states_.begin(), read_multiplexer_states_.end(), 0.);
+
+        // Putting actuators command and state interface to 0
+        std::fill(hw_actuators_commands_.begin(), hw_actuators_commands_.end(), 0.);
+        std::fill(hw_actuators_states_.begin(), hw_actuators_states_.end(), 0.);
+
+        // Putting RC state interface to NaN
+        std::fill(hw_rc_states_.begin(), hw_rc_states_.end(), 0.);
+
+        // Putting Multiplexer state interface to NaN
+        std::fill(hw_multiplexer_states_.begin(), hw_multiplexer_states_.end(), 0.);
+
+        // Send neutral PWM
+        std::vector<uint16_t> values;
+        for (const auto &joint_parameter: joint_parameters_) {
+            values.push_back(joint_parameter.pwm_neutral);
+        }
+
+        std::stringstream ss;
+        std::copy(values.begin(), values.end(), std::ostream_iterator<std::uint16_t>(ss, ","));
+        
+        // Writing actuators commands
+        RHACT_command_.message = (ss.str()).substr(0, ss.str().size() - 1);
+        std::string frame = RHACT_command_.toString();
+        std::size_t n = serial_->write(frame.size(), reinterpret_cast<const uint8_t*>(frame.c_str()), write_timeout_);
+
+        if (n != frame.size()) {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("TailHardware"),
+                "Unable to write commands on the serial port `%s` with baudrate`%d`",
+                port_.c_str(), baud_rate_
+            );
+            RCLCPP_DEBUG(
+                rclcpp::get_logger("TailHardware"),
+                "RHACT not written: `%s`", (RHACT_command_.toString()).c_str()
+            );
+            return hardware_interface::CallbackReturn::FAILURE;
+        }
+        else {
+            RCLCPP_DEBUG(
+                rclcpp::get_logger("TailHardware"),
+                "RHACT written: `%s`", (RHACT_command_.toString()).c_str()
+            );
+        }
+
         // Launching async read
         read_buffer_ = std::string(1024, '\0');
         if  (!serial_->async_read_until(
@@ -569,78 +627,51 @@ namespace riptide_hardware {
 
     hardware_interface::return_type TailHardware::read(const rclcpp::Time & time, const rclcpp::Duration & /*period*/) {
         
-
         // Getting actuators commands
         {
             if ((time - actuators_time_) < expiration_duration_) {
                 std::scoped_lock<std::mutex> lock(actuators_mutex_);
 
-                // Generate commands from values
-                std::vector<double> values;
-
                 // Thruster clamp
-                values.push_back(
-                    static_cast<double>(
-                        std::clamp(
-                            (std::clamp(
-                                read_actuators_states_[0],
-                                (std::uint16_t)1000,
-                                (std::uint16_t)2000
-                            ) - joint_parameters_[0].pwm_neutral) / 500.,
-                            joint_parameters_[0].min,
-                            joint_parameters_[0].max
-                        )
+                hw_actuators_states_[0] = static_cast<double>(
+                    std::clamp((read_actuators_states_[0]- joint_parameters_[0].pwm_neutral) / 500.,
+                        joint_parameters_[0].min,
+                        joint_parameters_[0].max
                     )
                 );
 
-                // Fin clamp
+                    // Fin clamp
                 for (std::size_t i = 1; i < 4; ++i) {
                     // Clamping values between joint_parameters_ min and max
-                    values.push_back(
-                        static_cast<double>(
-                            std::clamp(
-                                M_PI / 2000. * static_cast<double>(
-                                    read_actuators_states_[i] - joint_parameters_[i].pwm_neutral
-                                ),
-                                joint_parameters_[i].min,
-                                joint_parameters_[i].max
-                            )
+                    hw_actuators_states_[i] = static_cast<double>(
+                        std::clamp(
+                            M_PI / 2000. * static_cast<double>(
+                                read_actuators_states_[i] - joint_parameters_[i].pwm_neutral
+                            ),
+                            joint_parameters_[i].min,
+                            joint_parameters_[i].max
                         )
                     );
                 }
-
-                // Copying values into hw_actuators_states_
-                hw_actuators_states_ = std::move(values);
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Reading RTACT %f %f %f %f (%f seconds ago)", hw_actuators_states_[0], hw_actuators_states_[1], hw_actuators_states_[2], hw_actuators_states_[3], (time.seconds() - actuators_time_.seconds()));
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Reading RTACT %f %f %f %f (%f seconds ago)", hw_actuators_states_[0], hw_actuators_states_[1], hw_actuators_states_[2], hw_actuators_states_[3], (time - actuators_time_).seconds());
             }
             else {
-                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "Actuators states are expired! Last received RTACT frame was %f seconds ago.", (time.seconds() - actuators_time_.seconds()));
+                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "Actuators states are expired! Last received RTACT frame was %f seconds ago (considered expired after %f s).", (time - actuators_time_).seconds(), expiration_duration_.seconds());
                 return hardware_interface::return_type::ERROR;
             }
         }
 
         // Getting RC commands
         {
-            if ((time.seconds() - rc_time_.seconds()) < expiration_duration_.seconds()) {
+            if ((time - rc_time_) < expiration_duration_) {
                 std::scoped_lock<std::mutex> lock(rc_mutex_);
-                std::vector<double> values;
                 for (std::size_t i = 0; i < 6; ++i) {
-                    // Clamping values between -1 and 1
-                    values.push_back(
-                        static_cast<double>(
-                            std::clamp(
-                                read_rc_states_[i],
-                                (std::uint16_t)1000,
-                                (std::uint16_t)2000
-                            )
-                        )
-                    );
+                    hw_rc_states_[i] = (static_cast<double>(read_rc_states_[i]) - 1500.) / 500.;
                 }
-                hw_rc_states_ = std::move(values);
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read RTRCR %f %f %f %f %f %f (%f seconds ago)", hw_rc_states_[0], hw_rc_states_[1], hw_rc_states_[2], hw_rc_states_[3], hw_rc_states_[4], hw_rc_states_[5], (time.seconds() - rc_time_.seconds()));
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read RTRCR %f %f %f %f %f %f (%f seconds ago)", hw_rc_states_[0], hw_rc_states_[1], hw_rc_states_[2], hw_rc_states_[3], hw_rc_states_[4], hw_rc_states_[5], (time - rc_time_).seconds());
             }
             else {
-                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "RC states are expired! Last received RTRCR frame was %f seconds ago.", (time.seconds() - rc_time_.seconds()));
+                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "RC states are expired! Last received RTRCR frame was %f seconds ago (considered expired after %f s).", (time - rc_time_).seconds(), expiration_duration_.seconds());
                 return hardware_interface::return_type::ERROR;
             }
         }
@@ -648,13 +679,13 @@ namespace riptide_hardware {
 
         // Getting Multiplexer commands commands
         {
-            if ((time.seconds() - multiplexer_time_.seconds()) < expiration_duration_.seconds()) {
+            if ((time - multiplexer_time_) < expiration_duration_) {
                 std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
                 hw_multiplexer_states_ = read_multiplexer_states_;
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read RTMPX %f %f (%f seconds ago)", hw_multiplexer_states_[0], hw_multiplexer_states_[1], (time.seconds() - actuators_time_.seconds()));
+                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read RTMPX %f %f (%f seconds ago)", hw_multiplexer_states_[0], hw_multiplexer_states_[1], (time - multiplexer_time_).seconds());
             }
             else {
-                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "RC states are expired! Last received RTMPX frame was %f seconds ago.", (time.seconds() - actuators_time_.seconds()));
+                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "Multiplexer states are expired! Last received RTMPX frame was %f seconds ago (considered expired after %f s).", (time - multiplexer_time_).seconds(), expiration_duration_.seconds());
                 return hardware_interface::return_type::ERROR;
             }
         }
@@ -667,34 +698,47 @@ namespace riptide_hardware {
         // Generate commands from values
         std::vector<uint16_t> values;
 
-        // Thruster clamp
-        values.push_back(
-            static_cast<std::uint16_t>(
-                std::clamp(
-                    500. * std::clamp(
-                        hw_actuators_commands_[0],
-                        joint_parameters_[0].min,
-                        joint_parameters_[0].max
-                    ) + joint_parameters_[0].pwm_neutral,
-                    1000.,
-                    2000.
-                )
-            )
-        );
-
-        // Fin clamp
-        for (std::size_t i = 1; i < 4; ++i) {
-            // Clamping values between 1000 and 2000
+        if (std::all_of(hw_actuators_commands_.begin(), hw_actuators_commands_.end(), [](double i){ return !std::isnan(i); })) {
+            // Thruster clamp
             values.push_back(
                 static_cast<std::uint16_t>(
-                    joint_parameters_[i].pwm_neutral + 
-                    2000. / M_PI *
                     std::clamp(
-                        hw_actuators_commands_[i],
-                        joint_parameters_[i].min,
-                        joint_parameters_[i].max
+                        500. * std::clamp(
+                            hw_actuators_commands_[0],
+                            joint_parameters_[0].min,
+                            joint_parameters_[0].max
+                        ) + joint_parameters_[0].pwm_neutral,
+                        1000.,
+                        2000.
                     )
                 )
+            );
+
+            // Fin clamp
+            for (std::size_t i = 1; i < 4; ++i) {
+                // Clamping values between 1000 and 2000
+                values.push_back(
+                    static_cast<std::uint16_t>(
+                        joint_parameters_[i].pwm_neutral + 
+                        2000. / M_PI *
+                        std::clamp(
+                            hw_actuators_commands_[i],
+                            joint_parameters_[i].min,
+                            joint_parameters_[i].max
+                        )
+                    )
+                );
+            }
+
+           
+        }
+        else {
+            for (std::size_t i = 0; i < 4; ++i) {
+                values.push_back(joint_parameters_[i].pwm_neutral);
+            }
+            RCLCPP_WARN(rclcpp::get_logger("TailHardware"),
+                "NaN in writed commands %f %f %f %f",
+                hw_actuators_commands_[0], hw_actuators_commands_[1], hw_actuators_commands_[2], hw_actuators_commands_[3]
             );
         }
 
@@ -761,13 +805,14 @@ namespace riptide_hardware {
             if (std::all_of(commands.begin(), commands.end(), [](std::uint16_t i){ return ((i>=1000) and (i<=2000)); })) {
                 {
                     std::scoped_lock<std::mutex> lock(actuators_mutex_);
-                    read_actuators_states_ = std::move(commands);
+                    read_actuators_states_ = commands;
                     actuators_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
                     RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], actuators_time_.seconds());
                 }
             }
             else {
                 RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "RTACT commands are not in range [1000, 2000]us!");
+                RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "%s", (n.text).c_str());
                 RCLCPP_WARN(rclcpp::get_logger("TailHardware"), "RTACT %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], rclcpp::Clock(RCL_ROS_TIME).now().seconds());
             }
         }
@@ -813,7 +858,7 @@ namespace riptide_hardware {
                 {
                     std::scoped_lock<std::mutex> lock(rc_mutex_);
                     rc_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
-                    read_rc_states_ = std::move(commands);
+                    read_rc_states_ = commands;
                     RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTRCR %d %d %d %d %d %d, %f", commands[0], commands[1], commands[2], commands[3], commands[4], commands[5], rc_time_.seconds());
                 }
             }
@@ -859,11 +904,11 @@ namespace riptide_hardware {
                 );
             }
 
-            // Check if all received pwm are between 1000 and 2000
+            // Check if that recieved multiplexer is between 0 and 1 and that the remaining time is in [0, 100]s
             if ((commands[1] >= 0.) and (commands[1] <= 100.) and (commands[0] >= 0.) and (commands[0] <= 1.)) {
                 {
                     std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
-                    read_multiplexer_states_ = std::move(commands);
+                    read_multiplexer_states_ = commands;
                     multiplexer_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
                     RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f, %f", commands[0], commands[1], multiplexer_time_.seconds());
                 }

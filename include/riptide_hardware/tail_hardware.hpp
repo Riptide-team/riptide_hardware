@@ -23,7 +23,7 @@ namespace riptide_hardware {
     struct JointParameters {
         double min;
         double max;
-        uint16_t pwm_neutral;
+        std::uint16_t pwm_neutral;
     };
 
     using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;

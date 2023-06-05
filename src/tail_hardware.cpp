@@ -711,8 +711,8 @@ namespace riptide_hardware {
             for (std::size_t i = 1; i < 4; ++i) {
                 // Clamping values between 1000 and 2000
                 values.push_back(
-                    joint_parameters_[i].pwm_neutral + 
                     static_cast<std::uint16_t>(
+                        joint_parameters_[i].pwm_neutral + 
                         2000. / M_PI *
                         std::clamp<double>(
                             hw_actuators_commands_[i],

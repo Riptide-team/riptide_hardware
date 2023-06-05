@@ -627,69 +627,69 @@ namespace riptide_hardware {
 
     hardware_interface::return_type TailHardware::read(const rclcpp::Time & time, const rclcpp::Duration & /*period*/) {
         
-        // Getting actuators commands
-        {
-            if ((time - actuators_time_) < expiration_duration_) {
-                std::scoped_lock<std::mutex> lock(actuators_mutex_);
+        // // Getting actuators commands
+        // {
+        //     if ((time - actuators_time_) < expiration_duration_) {
+        //         std::scoped_lock<std::mutex> lock(actuators_mutex_);
 
-                // Thruster clamp
-                std::cout << read_actuators_states_[0] << std::endl;
-                std::cout << static_cast<double>(read_actuators_states_[0] - joint_parameters_[0].pwm_neutral) / 500. << std::endl;
-                // double value = std::clamp<double>(
-                //     static_cast<double>(read_actuators_states_[0] - joint_parameters_[0].pwm_neutral) / 500.,
-                //     joint_parameters_[0].min,
-                //     joint_parameters_[0].max
-                // );
-                // std::cout << value << std::endl;
-                // hw_actuators_states_[0] = value;
+        //         // Thruster clamp
+        //         std::cout << read_actuators_states_[0] << std::endl;
+        //         std::cout << static_cast<double>(read_actuators_states_[0] - joint_parameters_[0].pwm_neutral) / 500. << std::endl;
+        //         // double value = std::clamp<double>(
+        //         //     static_cast<double>(read_actuators_states_[0] - joint_parameters_[0].pwm_neutral) / 500.,
+        //         //     joint_parameters_[0].min,
+        //         //     joint_parameters_[0].max
+        //         // );
+        //         // std::cout << value << std::endl;
+        //         // hw_actuators_states_[0] = value;
 
-                // Fin clamp
-                for (std::size_t i = 1; i < 4; ++i) {
-                    // Clamping values between joint_parameters_ min and max
-                    // double value = std::clamp<double>(
-                    //     M_PI / 2000. * static_cast<double>(read_actuators_states_[i] - joint_parameters_[i].pwm_neutral),
-                    //     joint_parameters_[i].min,
-                    //     joint_parameters_[i].max
-                    // );
-                    // std::cout << value << std::endl;
-                    // hw_actuators_states_[i] = value;
-                }
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Reading RTACT %f %f %f %f (%f seconds ago)", hw_actuators_states_[0], hw_actuators_states_[1], hw_actuators_states_[2], hw_actuators_states_[3], (time - actuators_time_).seconds());
-            }
-            else {
-                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "Actuators states are expired! Last received RTACT frame was %f seconds ago (considered expired after %f s).", (time - actuators_time_).seconds(), expiration_duration_.seconds());
-                return hardware_interface::return_type::ERROR;
-            }
-        }
+        //         // Fin clamp
+        //         for (std::size_t i = 1; i < 4; ++i) {
+        //             // Clamping values between joint_parameters_ min and max
+        //             // double value = std::clamp<double>(
+        //             //     M_PI / 2000. * static_cast<double>(read_actuators_states_[i] - joint_parameters_[i].pwm_neutral),
+        //             //     joint_parameters_[i].min,
+        //             //     joint_parameters_[i].max
+        //             // );
+        //             // std::cout << value << std::endl;
+        //             // hw_actuators_states_[i] = value;
+        //         }
+        //         RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Reading RTACT %f %f %f %f (%f seconds ago)", hw_actuators_states_[0], hw_actuators_states_[1], hw_actuators_states_[2], hw_actuators_states_[3], (time - actuators_time_).seconds());
+        //     }
+        //     else {
+        //         RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "Actuators states are expired! Last received RTACT frame was %f seconds ago (considered expired after %f s).", (time - actuators_time_).seconds(), expiration_duration_.seconds());
+        //         return hardware_interface::return_type::ERROR;
+        //     }
+        // }
 
-        // Getting RC commands
-        {
-            if ((time - rc_time_) < expiration_duration_) {
-                std::scoped_lock<std::mutex> lock(rc_mutex_);
-                for (std::size_t i = 0; i < 6; ++i) {
-                    hw_rc_states_[i] = (static_cast<double>(read_rc_states_[i]) - 1500.) / 500.;
-                }
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read RTRCR %f %f %f %f %f %f (%f seconds ago)", hw_rc_states_[0], hw_rc_states_[1], hw_rc_states_[2], hw_rc_states_[3], hw_rc_states_[4], hw_rc_states_[5], (time - rc_time_).seconds());
-            }
-            else {
-                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "RC states are expired! Last received RTRCR frame was %f seconds ago (considered expired after %f s).", (time - rc_time_).seconds(), expiration_duration_.seconds());
-                return hardware_interface::return_type::ERROR;
-            }
-        }
+        // // Getting RC commands
+        // {
+        //     if ((time - rc_time_) < expiration_duration_) {
+        //         std::scoped_lock<std::mutex> lock(rc_mutex_);
+        //         for (std::size_t i = 0; i < 6; ++i) {
+        //             hw_rc_states_[i] = (static_cast<double>(read_rc_states_[i]) - 1500.) / 500.;
+        //         }
+        //         RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read RTRCR %f %f %f %f %f %f (%f seconds ago)", hw_rc_states_[0], hw_rc_states_[1], hw_rc_states_[2], hw_rc_states_[3], hw_rc_states_[4], hw_rc_states_[5], (time - rc_time_).seconds());
+        //     }
+        //     else {
+        //         RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "RC states are expired! Last received RTRCR frame was %f seconds ago (considered expired after %f s).", (time - rc_time_).seconds(), expiration_duration_.seconds());
+        //         return hardware_interface::return_type::ERROR;
+        //     }
+        // }
 
 
-        // Getting Multiplexer commands commands
-        {
-            if ((time - multiplexer_time_) < expiration_duration_) {
-                std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
-                hw_multiplexer_states_ = read_multiplexer_states_;
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read RTMPX %f %f (%f seconds ago)", hw_multiplexer_states_[0], hw_multiplexer_states_[1], (time - multiplexer_time_).seconds());
-            }
-            else {
-                RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "Multiplexer states are expired! Last received RTMPX frame was %f seconds ago (considered expired after %f s).", (time - multiplexer_time_).seconds(), expiration_duration_.seconds());
-                return hardware_interface::return_type::ERROR;
-            }
-        }
+        // // Getting Multiplexer commands commands
+        // {
+        //     if ((time - multiplexer_time_) < expiration_duration_) {
+        //         std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
+        //         hw_multiplexer_states_ = read_multiplexer_states_;
+        //         RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "Read RTMPX %f %f (%f seconds ago)", hw_multiplexer_states_[0], hw_multiplexer_states_[1], (time - multiplexer_time_).seconds());
+        //     }
+        //     else {
+        //         RCLCPP_FATAL(rclcpp::get_logger("TailHardware"), "Multiplexer states are expired! Last received RTMPX frame was %f seconds ago (considered expired after %f s).", (time - multiplexer_time_).seconds(), expiration_duration_.seconds());
+        //         return hardware_interface::return_type::ERROR;
+        //     }
+        // }
 
         return hardware_interface::return_type::OK;
     }

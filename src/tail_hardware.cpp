@@ -876,6 +876,20 @@ namespace riptide_hardware {
             try {
                 commands.push_back(std::stod(n.parameters[0]));
                 commands.push_back(std::stod(n.parameters[1]));
+
+                // Check if that recieved multiplexer is between 0 and 1 and that the remaining time is in [0, 100]s
+                if ((commands[1] >= 0.) and (commands[1] <= 100.) and (commands[0] >= 0.) and (commands[0] <= 1.)) {
+                    {
+                        std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
+                        read_multiplexer_states_ = commands;
+                        multiplexer_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
+                        RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f, %f", commands[0], commands[1], multiplexer_time_.seconds());
+                    }
+                }
+                else {
+                    RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX commands are not in range [1000, 2000]us!");
+                    RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f, %f", commands[0], commands[1], rclcpp::Clock(RCL_ROS_TIME).now().seconds());
+                }
             }
             catch (const std::invalid_argument& ia) {
                 RCLCPP_DEBUG(
@@ -894,20 +908,6 @@ namespace riptide_hardware {
                     rclcpp::get_logger("TailHardware"),
                     "RTMPX parsing error (%s)", e.what()
                 );
-            }
-
-            // Check if that recieved multiplexer is between 0 and 1 and that the remaining time is in [0, 100]s
-            if ((commands[1] >= 0.) and (commands[1] <= 100.) and (commands[0] >= 0.) and (commands[0] <= 1.)) {
-                {
-                    std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
-                    read_multiplexer_states_ = commands;
-                    multiplexer_time_ = rclcpp::Clock(RCL_ROS_TIME).now();
-                    RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f, %f", commands[0], commands[1], multiplexer_time_.seconds());
-                }
-            }
-            else {
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX commands are not in range [1000, 2000]us!");
-                RCLCPP_DEBUG(rclcpp::get_logger("TailHardware"), "RTMPX %f %f, %f", commands[0], commands[1], rclcpp::Clock(RCL_ROS_TIME).now().seconds());
             }
         }
         else {

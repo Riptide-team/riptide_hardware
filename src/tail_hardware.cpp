@@ -639,7 +639,7 @@ namespace riptide_hardware {
                     joint_parameters_[0].max
                 );
 
-                    // Fin clamp
+                // Fin clamp
                 for (std::size_t i = 1; i < 4; ++i) {
                     // Clamping values between joint_parameters_ min and max
                     hw_actuators_states_[i] = std::clamp<double>(

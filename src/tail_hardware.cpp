@@ -633,6 +633,8 @@ namespace riptide_hardware {
                 std::scoped_lock<std::mutex> lock(actuators_mutex_);
 
                 // Thruster clamp
+                std::cout << read_actuators_states_[0] << std::endl;
+                std::cout << static_cast<double>(read_actuators_states_[0] - joint_parameters_[0].pwm_neutral) / 500. << std::endl;
                 double value = std::clamp<double>(
                     static_cast<double>(read_actuators_states_[0] - joint_parameters_[0].pwm_neutral) / 500.,
                     joint_parameters_[0].min,

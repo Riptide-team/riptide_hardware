@@ -39,7 +39,7 @@ FetchContent_MakeAvailable(NemaTode)
 add_library(${PROJECT_NAME} SHARED src/imu_hardware.cpp src/pressure_hardware.cpp src/echosounder_hardware.cpp src/tail_hardware.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 target_link_libraries(${PROJECT_NAME} sparton_ahrs_m1_driver sea_scan_echo_driver ms5837_driver rtac_asio NemaTode)
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
 ament_target_dependencies(
   ${PROJECT_NAME}
   hardware_interface

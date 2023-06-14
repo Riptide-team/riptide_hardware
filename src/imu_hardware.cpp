@@ -8,7 +8,7 @@
 
 #include <sparton_ahrs_m1_driver/sparton_ahrs_m1_driver.hpp>
 
-#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Geometry>
 
 #include <algorithm>
 #include <memory>
@@ -111,7 +111,7 @@ namespace riptide_hardware {
         RCLCPP_INFO(rclcpp::get_logger("IMUHardware"), "Activating ...please wait...");
 
         // Instanciate the driver
-        // try {
+        try {
             driver_ = std::make_unique<SpartonAHRSM1Driver>(port_, baud_rate_);
             bool ret = driver_->init();
             if (!ret) {
@@ -121,14 +121,14 @@ namespace riptide_hardware {
                 );
                 return hardware_interface::CallbackReturn::ERROR;
             }
-        // }
-        // catch(boost::system::system_error& e) {
-        //     RCLCPP_FATAL(
-        //         rclcpp::get_logger("IMUHardware"),
-        //         "Serial error: '%s'", e.what()
-        //     );
-        //     return hardware_interface::CallbackReturn::ERROR;
-        // }
+        }
+        catch(boost::system::system_error& e) {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("IMUHardware"),
+                "Serial error: '%s'", e.what()
+            );
+            return hardware_interface::CallbackReturn::ERROR;
+        }
 
         // Set joint state
         for (uint i = 0; i < info_.sensors[0].state_interfaces.size(); ++i) {

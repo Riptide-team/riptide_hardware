@@ -10,6 +10,7 @@
 #include <sparton_ahrs_m1_driver/sparton_ahrs_m1_driver.hpp>
 
 #include <memory>
+#include <eigen3/Eigen/Geometry>
 
 
 namespace riptide_hardware {

@@ -166,9 +166,16 @@ namespace riptide_hardware {
             return hardware_interface::return_type::ERROR;
         }
 
-        std::copy(a.begin(), a.end(), hw_sensor_states_.begin());
+        // Boresight rectification
+        Eigen::Vector3d acceleration = {a[0], a[1], a[2]};
+        acceleration = boresight_q_ * acceleration
 
-        // Gyrometer
+        // Acceleration storage
+        hw_sensor_states_[0] = acceleration(0);
+        hw_sensor_states_[1] = acceleration(1);
+        hw_sensor_states_[2] = acceleration(2);
+
+        // Gyroscope
         std::vector<double> g;
         try {
             g = driver_->read_gyroscope();
@@ -181,7 +188,14 @@ namespace riptide_hardware {
             return hardware_interface::return_type::ERROR;
         }
 
-        std::copy(g.begin(), g.end(), hw_sensor_states_.begin()+3);
+        // Boresight rectification
+        Eigen::Vector3d gyroscope = {g[0], g[1], g[2]};
+        gyroscope = boresight_q_ * gyroscope
+
+        // Acceleration storage
+        hw_sensor_states_[3] = gyroscope(0);
+        hw_sensor_states_[4] = gyroscope(1);
+        hw_sensor_states_[5] = gyroscope(2);
 
         // Quaternion
         std::vector<double> q;
@@ -227,7 +241,14 @@ namespace riptide_hardware {
             return hardware_interface::return_type::ERROR;
         }
 
-        std::copy(m.begin(), m.end(), hw_sensor_states_.begin()+10);
+        // Boresight rectification
+        Eigen::Vector3d magnetometer = {m[0], m[1], m[2]};
+        magnetometer = boresight_q_ * magnetometer
+
+        // Acceleration storage
+        hw_sensor_states_[3] = magnetometer(0);
+        hw_sensor_states_[4] = magnetometer(1);
+        hw_sensor_states_[5] = magnetometer(2);
 
         // Debug
         std::stringstream ss;

@@ -196,13 +196,18 @@ namespace riptide_hardware {
             return hardware_interface::return_type::ERROR;
         }
 
+        // Getting quaternion
         Eigen::Quaterniond quat;
         quat.w() = q[0];
         quat.x() = q[1];
         quat.y() = q[2];
         quat.z() = q[3];
 
+        // Boresight rectification
         quat = boresight_q_ * quat;
+
+        // NED to NWU
+        quat = Eigen::AxisAngle(Eigen::Vector3d::UnitX, -M_PI) * quat * Eigen::AxisAngle(Eigen::Vector3d::UnitX, M_PI);
 
         hw_sensor_states_[6] = quat.w();
         hw_sensor_states_[7] = quat.x();

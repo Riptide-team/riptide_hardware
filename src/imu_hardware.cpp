@@ -207,7 +207,7 @@ namespace riptide_hardware {
         quat = boresight_q_ * quat;
 
         // NED to NWU
-        quat = Eigen::AxisAngle(Eigen::Vector3d::UnitX, -M_PI) * quat * Eigen::AxisAngle(Eigen::Vector3d::UnitX, M_PI);
+        quat = Eigen::AngleAxisd(Eigen::Vector3d::UnitX, -M_PI) * quat * Eigen::AngleAxisd(Eigen::Vector3d::UnitX, M_PI);
 
         hw_sensor_states_[6] = quat.w();
         hw_sensor_states_[7] = quat.x();

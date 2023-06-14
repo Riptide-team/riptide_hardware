@@ -41,6 +41,9 @@ namespace riptide_hardware {
             // Serial baud rate
             unsigned int baud_rate_;
 
+            // Boresight quaternion
+            Eigen::Quaterniond boresight_q_;
+
             // Driver
             std::unique_ptr<SpartonAHRSM1Driver> driver_ = nullptr;
     };

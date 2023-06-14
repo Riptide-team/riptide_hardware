@@ -44,6 +44,50 @@ namespace riptide_hardware {
         
         RCLCPP_INFO(rclcpp::get_logger("IMUHardware"), "port: %s - baud rate: %d", port_.c_str(), baud_rate_);
 
+        // Getting boresight quaternion x
+        if (info_.hardware_parameters.find("boresight_qx") == info_.hardware_parameters.end()) {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("IMUHardware"),
+                "You need to specify the boresight_qx in ros2_control urdf tag as param!"
+            );
+            return hardware_interface::CallbackReturn::ERROR;
+        }
+
+        // Getting boresight quaternion y
+        if (info_.hardware_parameters.find("boresight_qy") == info_.hardware_parameters.end()) {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("IMUHardware"),
+                "You need to specify the boresight_qy in ros2_control urdf tag as param!"
+            );
+            return hardware_interface::CallbackReturn::ERROR;
+        }
+
+        // Getting boresight quaternion z
+        if (info_.hardware_parameters.find("boresight_qz") == info_.hardware_parameters.end()) {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("IMUHardware"),
+                "You need to specify the boresight_qz in ros2_control urdf tag as param!"
+            );
+            return hardware_interface::CallbackReturn::ERROR;
+        }
+
+        // Getting boresight quaternion w
+        if (info_.hardware_parameters.find("boresight_qw") == info_.hardware_parameters.end()) {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("IMUHardware"),
+                "You need to specify the boresight_qw in ros2_control urdf tag as param!"
+            );
+            return hardware_interface::CallbackReturn::ERROR;
+        }
+
+        // Getting boresight quaternion
+        boresight_q_.x() = std::stod(info_.hardware_parameters["boresight_qx"]);
+        boresight_q_.y() = std::stod(info_.hardware_parameters["boresight_qy"]);
+        boresight_q_.z() = std::stod(info_.hardware_parameters["boresight_qz"]);
+        boresight_q_.w() = std::stod(info_.hardware_parameters["boresight_qw"]);
+        boresight_q_.normalize();
+        boresight_q_.conjugate();
+
         // Resizing hw_sensor_states with the number of state interfaces
         hw_sensor_states_.resize(info_.sensors[0].state_interfaces.size(), std::numeric_limits<double>::quiet_NaN());
 
@@ -157,7 +201,8 @@ namespace riptide_hardware {
         quat.x() = q[1];
         quat.y() = q[2];
         quat.z() = q[3];
-        quat = Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX()) * quat * Eigen::AngleAxisd(-M_PI, Eigen::Vector3d::UnitX());
+
+        quat = boresight_q_ * quat;
 
         hw_sensor_states_[6] = quat.w();
         hw_sensor_states_[7] = quat.x();

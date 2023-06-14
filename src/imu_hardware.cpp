@@ -168,7 +168,7 @@ namespace riptide_hardware {
 
         // Boresight rectification
         Eigen::Vector3d acceleration = {a[0], a[1], a[2]};
-        acceleration = boresight_q_ * acceleration
+        acceleration = boresight_q_ * acceleration;
 
         // Acceleration storage
         hw_sensor_states_[0] = acceleration(0);
@@ -190,7 +190,7 @@ namespace riptide_hardware {
 
         // Boresight rectification
         Eigen::Vector3d gyroscope = {g[0], g[1], g[2]};
-        gyroscope = boresight_q_ * gyroscope
+        gyroscope = boresight_q_ * gyroscope;
 
         // Acceleration storage
         hw_sensor_states_[3] = gyroscope(0);
@@ -243,7 +243,7 @@ namespace riptide_hardware {
 
         // Boresight rectification
         Eigen::Vector3d magnetometer = {m[0], m[1], m[2]};
-        magnetometer = boresight_q_ * magnetometer
+        magnetometer = boresight_q_ * magnetometer;
 
         // Acceleration storage
         hw_sensor_states_[3] = magnetometer(0);

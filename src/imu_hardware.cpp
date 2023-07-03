@@ -192,6 +192,9 @@ namespace riptide_hardware {
         Eigen::Vector3d gyroscope = {g[0], g[1], g[2]};
         gyroscope = boresight_q_ * gyroscope;
 
+        // NED to NWU
+        // gyroscope = Eigen::AngleAxisd(-M_PI, Eigen::Vector3d::UnitX()) * quat * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitX());
+
         // Acceleration storage
         hw_sensor_states_[3] = gyroscope(0);
         hw_sensor_states_[4] = gyroscope(1);

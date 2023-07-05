@@ -878,7 +878,7 @@ namespace riptide_hardware {
                 commands.push_back(std::stod(n.parameters[1]));
 
                 // Check if that recieved multiplexer is between 0 and 1 and that the remaining time is in [0, 100]s
-                if ((commands[1] >= 0.) and (commands[1] <= 100.) and (commands[0] >= 0.) and (commands[0] <= 1.)) {
+                if ((commands[1] >= 0.) and (commands[1] <= 300.) and (commands[0] >= 0.) and (commands[0] <= 1.)) {
                     {
                         std::scoped_lock<std::mutex> lock(multiplexer_mutex_);
                         read_multiplexer_states_ = commands;

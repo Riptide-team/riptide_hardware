@@ -18,7 +18,8 @@
 
   <build_depend>libboost-system-dev</build_depend>
   <build_depend>libboost-thread-dev</build_depend>
-  
+  <build_depend>libi2c-dev</build_depend>
+
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
   <test_depend>hardware_interface</test_depend>

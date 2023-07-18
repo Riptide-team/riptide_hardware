@@ -142,7 +142,7 @@ namespace riptide_hardware {
             std::vector<double> read_multiplexer_states_;
 
             // Threshold fin commands (threshold on the number of us to be different from current command befor applying the new command to a fin)
-            std::uint16_t threshold_fin_commands_ = 20;
+            std::uint16_t threshold_fin_commands_;
 
             // Previous NMEA values for actuators
             std::vector<uint16_t> previous_values_;

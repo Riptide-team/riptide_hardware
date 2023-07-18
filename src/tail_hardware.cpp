@@ -98,12 +98,14 @@ namespace riptide_hardware {
 
         if (info_.hardware_parameters.find("threshold_fin_commands") == info_.hardware_parameters.end()) {
             threshold_fin_commands_ = static_cast<uint16_t>(std::stoi(info_.hardware_parameters.at("threshold_fin_commands")));
-            RCLCPP_DEBUG(
-                rclcpp::get_logger("TailHardware"),
-                "Threshold on commands is set to %d", threshold_fin_commands_
-            );
-            return hardware_interface::CallbackReturn::ERROR;
         }
+        else {
+            threshold_fin_commands_ = 20;
+        }
+        RCLCPP_DEBUG(
+            rclcpp::get_logger("TailHardware"),
+            "Threshold on commands is set to the default_value %d", threshold_fin_commands_
+        );
 
 
         // Resizing joint commands and states interface

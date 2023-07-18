@@ -96,6 +96,16 @@ namespace riptide_hardware {
             )
         );
 
+        if (info_.hardware_parameters.find("threshold_fin_commands") == info_.hardware_parameters.end()) {
+            threshold_fin_commands_ = static_cast<uint16_t>(std::stoi(info_.hardware_parameters.at("threshold_fin_commands")));
+            RCLCPP_DEBUG(
+                rclcpp::get_logger("TailHardware"),
+                "Threshold on commands is set to %d", threshold_fin_commands_
+            );
+            return hardware_interface::CallbackReturn::ERROR;
+        }
+
+
         // Resizing joint commands and states interface
         std::stringstream ss;
         for (const auto &joint: info_.joints) {
@@ -455,8 +465,10 @@ namespace riptide_hardware {
 
         // Filling read_actuators_states
         read_actuators_states_.resize(4);
+        previous_values_.resize(4);
         for (std::size_t i = 0; i < read_actuators_states_.size(); ++i) {
             read_actuators_states_[i] = joint_parameters_[i].pwm_neutral;
+            previous_values_[i] = joint_parameters_[i].pwm_neutral;
         }
 
         // Filling read_rc_states
@@ -736,7 +748,13 @@ namespace riptide_hardware {
 
         // Generate NMEA frame
         std::stringstream ss;
-        std::copy(std::begin(values), std::end(values), std::ostream_iterator<uint16_t>(ss,","));
+        ss << values[0] << ",";
+        for (std::size_t i=1; i<4; ++i) {
+            if (std::abs(values[i] - previous_values_[i]) > threshold_fin_commands_) {
+                previous_values_[i] = values[i];
+            }
+            ss << previous_values_[i] << ",";
+        }
         RHACT_command_.message = (ss.str()).substr(0, ss.str().size() - 1);
 
         // Writing frame

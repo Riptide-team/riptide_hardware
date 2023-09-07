@@ -116,7 +116,7 @@ namespace riptide_hardware {
         if (info_.joints.size() != 4) {
             RCLCPP_FATAL(
                 rclcpp::get_logger("TailHardware"),
-                "TailHardware should have exactly 4 joints [`thruster`, `d_fin`, `p_fin`, `s_fin`]\nProvided joints are: %s", (ss.str()).c_str()
+                "TailHardware should have exactly 4 joints [`thruster_joint`, `d_joint`, `p_joint`, `s_joint`]\nProvided joints are: %s", (ss.str()).c_str()
             );
             return hardware_interface::CallbackReturn::FAILURE;
         }
@@ -165,7 +165,7 @@ namespace riptide_hardware {
             }
         };
 
-        std::vector<std::string> actuator_names = {"thruster", "d_fin", "p_fin", "s_fin"};
+        std::vector<std::string> actuator_names = {"thruster_joint", "d_joint", "p_joint", "s_joint"};
         std::transform(
             actuator_names.cbegin(), actuator_names.cend(),
             std::back_inserter(joint_parameters_), [&](std::string name) { return get_joint_params(name); }
@@ -260,7 +260,7 @@ namespace riptide_hardware {
             }
 
             // D Fin [state: `position`]
-            if (joint.name.find("d_fin") != std::string::npos) {
+            if (joint.name.find("d_joint") != std::string::npos) {
                 if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name == "position")) {
                     state_interfaces.emplace_back(
                         hardware_interface::StateInterface(
@@ -271,13 +271,13 @@ namespace riptide_hardware {
                 else {
                     RCLCPP_FATAL(
                         rclcpp::get_logger("TailHardware"),
-                        "`d_fin` accept only one state interface of type `position`\nProvided command interface `%s`", joint.command_interfaces[0].name.c_str()
+                        "`d_joint` accept only one state interface of type `position`\nProvided command interface `%s`", joint.command_interfaces[0].name.c_str()
                     );
                 }
             }
 
             // P Fin [state: `position`]
-            if (joint.name.find("p_fin") != std::string::npos) {
+            if (joint.name.find("p_joint") != std::string::npos) {
                 if ((joint.state_interfaces.size() == 1) and (joint.state_interfaces[0].name == "position")) {
                     state_interfaces.emplace_back(
                         hardware_interface::StateInterface(
@@ -288,13 +288,13 @@ namespace riptide_hardware {
                 else {
                     RCLCPP_FATAL(
                         rclcpp::get_logger("TailHardware"),
-                        "`p_fin` accept only one command interface of type `position`\nProvided command interface `%s`", joint.command_interfaces[0].name.c_str()
+                        "`p_joint` accept only one command interface of type `position`\nProvided command interface `%s`", joint.command_interfaces[0].name.c_str()
                     );
                 }
             }
 
             // S Fin [state: `position`]
-            if (joint.name.find("s_fin") != std::string::npos) {
+            if (joint.name.find("s_joint") != std::string::npos) {
                 if ((joint.state_interfaces.size() == 1) and (joint.state_interfaces[0].name == "position")) {
                     state_interfaces.emplace_back(
                         hardware_interface::StateInterface(
@@ -305,7 +305,7 @@ namespace riptide_hardware {
                 else {
                     RCLCPP_FATAL(
                         rclcpp::get_logger("TailHardware"),
-                        "`s_fin` accept only one command interface of type `position`\nProvided command interface `%s`", joint.command_interfaces[0].name.c_str()
+                        "`s_joint` accept only one command interface of type `position`\nProvided command interface `%s`", joint.command_interfaces[0].name.c_str()
                     );
                 }
             }
@@ -382,7 +382,7 @@ namespace riptide_hardware {
             }
 
             // D Fin [command: `position`]
-            if (joint.name.find("d_fin") != std::string::npos) {
+            if (joint.name.find("d_joint") != std::string::npos) {
                 if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name == "position")) {
                     command_interfaces.emplace_back(
                         hardware_interface::CommandInterface(
@@ -393,13 +393,13 @@ namespace riptide_hardware {
                 else {
                     RCLCPP_FATAL(
                         rclcpp::get_logger("TailHardware"),
-                        "`d_fin` joint accept only one command interface of type `position`"
+                        "`d_joint` joint accept only one command interface of type `position`"
                     );
                 }
             }
 
             // P Fin [command: `position`]
-            if (joint.name.find("p_fin") != std::string::npos) {
+            if (joint.name.find("p_joint") != std::string::npos) {
                 if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name == "position")) {
                     command_interfaces.emplace_back(
                         hardware_interface::CommandInterface(
@@ -410,13 +410,13 @@ namespace riptide_hardware {
                 else {
                     RCLCPP_FATAL(
                         rclcpp::get_logger("TailHardware"),
-                        "`p_fin` joint accept only one command interface of type `position`"
+                        "`p_joint` joint accept only one command interface of type `position`"
                     );
                 }
             }
 
             // S Fin [command: `position`]
-            if (joint.name.find("s_fin") != std::string::npos) {
+            if (joint.name.find("s_joint") != std::string::npos) {
                 if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name == "position")) {
                     command_interfaces.emplace_back(
                         hardware_interface::CommandInterface(
@@ -427,7 +427,7 @@ namespace riptide_hardware {
                 else {
                     RCLCPP_FATAL(
                         rclcpp::get_logger("TailHardware"),
-                        "`s_fin` joint accept only one command interface of type `position`"
+                        "`s_joint` joint accept only one command interface of type `position`"
                     );
                 }
             }

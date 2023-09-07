@@ -243,7 +243,7 @@ namespace riptide_hardware {
 
         for (const auto &joint: info_.joints) {
             // Thruster [state: `velocity`]
-            if (joint.name.find("thruster") != std::string::npos) {
+            if (joint.name.find("thruster_joint") != std::string::npos) {
                 if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name == "velocity")) {
                     state_interfaces.emplace_back(
                         hardware_interface::StateInterface(
@@ -254,7 +254,7 @@ namespace riptide_hardware {
                 else {
                     RCLCPP_FATAL(
                         rclcpp::get_logger("TailHardware"),
-                        "`thruster` accept only one state interface of type `velocity`\nProvided command interface `%s`", joint.command_interfaces[0].name.c_str()
+                        "`thruster_joint` accept only one state interface of type `velocity`\nProvided command interface `%s`", joint.command_interfaces[0].name.c_str()
                     );
                 }
             }
@@ -365,7 +365,7 @@ namespace riptide_hardware {
 
         for (const auto &joint: info_.joints) {
             // Thruster [command: `velocity`]
-            if (joint.name.find("thruster") != std::string::npos) {
+            if (joint.name.find("thruster_joint") != std::string::npos) {
                 if ((joint.command_interfaces.size() == 1) and (joint.command_interfaces[0].name == "velocity")) {
                     command_interfaces.emplace_back(
                         hardware_interface::CommandInterface(
@@ -376,7 +376,7 @@ namespace riptide_hardware {
                 else {
                     RCLCPP_FATAL(
                         rclcpp::get_logger("TailHardware"),
-                        "`thruster` joint accept only one command interface of type `velocity`"
+                        "`thruster_joint` accept only one command interface of type `velocity`"
                     );
                 }
             }

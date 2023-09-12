@@ -67,6 +67,9 @@ namespace riptide_hardware {
 
             // Fluid density
             double fluid_density_;
+
+            // Max pressure rate
+            double max_pressure_rate_;
     };
 } // riptide_hardware
 

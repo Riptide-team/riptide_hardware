@@ -20,12 +20,36 @@ namespace riptide_hardware {
             bool read = driver_->read_data();
             if (read) {
                 std::scoped_lock<std::mutex> lock_(data_mutex_);
-                driver_states_ = std::vector<double> {
-                    driver_->pressure()*100,    // Pa
-                    driver_->temperature(),     // °C
-                    driver_->depth(),           // m
-                    driver_->altitude()         // m
-                };
+
+                // Comparing if rate is not too high
+                if (std::abs(driver_->pressure()*100 - driver_states_[0]) > max_pressure_rate_) {
+                    RCLCPP_WARN(
+                        rclcpp::get_logger("PressureHardware"),
+                        "Pressure rate is too high! (current: %f, previous: %f, max: %f)",
+                        driver_->pressure(), driver_states_[0], max_pressure_rate_
+                    );
+                }
+                else {
+                    driver_states_[0] = driver_->pressure()*100; // Pa
+                }
+
+                // Setting temperature
+                driver_states_[1] = driver_->temperature(); // °C
+
+                // Comparing if depth rate is not too high
+                if (std::abs(driver_->depth() - driver_states_[2]) > max_pressure_rate_ / 10000.) {
+                    RCLCPP_WARN(
+                        rclcpp::get_logger("PressureHardware"),
+                        "Depth rate is too high! (current: %f, previous: %f, max: %f)",
+                        driver_->depth(), driver_states_[2], max_pressure_rate_ / 10000.
+                    );
+                }
+                else {
+                    driver_states_[2] = driver_->depth(); // m
+                }
+
+                // Setting altitude
+                driver_states_[3] = driver_->altitude(); // m
             }
         }
     }
@@ -60,17 +84,27 @@ namespace riptide_hardware {
             fluid_density_ = 1023.6;    // kg.m^{-3}
         }
 
-        RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "Calibration pressure: %f", calibration_pressure_);
+        // Getting calibration pressure
+        if (info_.hardware_parameters.find("max_pressure_rate") == info_.hardware_parameters.end()) {
+            RCLCPP_FATAL(
+                rclcpp::get_logger("PressureHardware"),
+                "You need to specify the max pressure rate in ros2_control urdf tag as param!"
+            );
+            return hardware_interface::CallbackReturn::ERROR;
+        }
+        max_pressure_rate_ = std::stod(info_.hardware_parameters["max_pressure_rate"]);
+
+        RCLCPP_DEBUG(rclcpp::get_logger("PressureHardware"), "Calibration pressure: %f", calibration_pressure_);
 
         // Getting port and baud_rate parameters
         port_ = info_.hardware_parameters["port"];
         
-        RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "port: %s", port_.c_str());
+        RCLCPP_DEBUG(rclcpp::get_logger("PressureHardware"), "port: %s", port_.c_str());
 
         // Resizing hw_sensor_states with the number of state interfaces
         hw_sensor_states_.resize(info_.sensors[0].state_interfaces.size(), std::numeric_limits<double>::quiet_NaN());
 
-        RCLCPP_INFO(rclcpp::get_logger("PressureHardware"), "Successfully initialized !");
+        RCLCPP_DEBUG(rclcpp::get_logger("PressureHardware"), "Successfully initialized !");
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 

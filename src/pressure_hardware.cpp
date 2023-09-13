@@ -104,6 +104,8 @@ namespace riptide_hardware {
         // Resizing hw_sensor_states with the number of state interfaces
         hw_sensor_states_.resize(info_.sensors[0].state_interfaces.size(), std::numeric_limits<double>::quiet_NaN());
 
+        driver_states_.resize(4, std::numeric_limits<double>::quiet_NaN());
+
         RCLCPP_DEBUG(rclcpp::get_logger("PressureHardware"), "Successfully initialized !");
         return hardware_interface::CallbackReturn::SUCCESS;
     }
